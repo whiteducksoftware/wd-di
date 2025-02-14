@@ -1,6 +1,6 @@
 # tests/test_di.py
 
-from typing import TYPE_CHECKING, Any, assert_type
+from typing import assert_type
 from wd.di.service_collection import ServiceCollection
 
 

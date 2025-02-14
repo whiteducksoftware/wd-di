@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass
 from wd.di import services
+from wd.di.config import Configuration, IConfiguration
 from wd.di.decorators import singleton
 
 # Define interfaces
@@ -12,6 +14,21 @@ class IUserService(ABC):
     @abstractmethod
     def notify_user(self, user_id: str, message: str) -> None:
         pass
+
+
+
+config = Configuration({
+    "app": {
+        "api_key": "real-secret-key"
+    }
+})
+
+@dataclass
+class AppConfig:
+    api_key: str = "secret-key"
+
+services.add_singleton_factory(IConfiguration, lambda _: config)
+services.configure(AppConfig, section="app")
 
 # Implementations with decorators
 @singleton(IEmailService)  # Type hint works with interface
@@ -27,16 +44,7 @@ class UserService(IUserService):
     def notify_user(self, user_id: str, message: str) -> None:
         self.email_service.send_email(f"user{user_id}@example.com", "Notification", message)
 
-# Define interface for config service for better type safety
-class IConfigService(ABC):
-    @abstractmethod
-    def get_config(self, key: str) -> str:
-        pass
 
-@singleton(IConfigService)  # Register with interface
-class ConfigService(IConfigService):
-    def get_config(self, key: str) -> str:
-        return f"Config value for {key}"
 
 # Service without interface - register directly with the class
 class LogService:
@@ -50,14 +58,15 @@ services.add_singleton(LogService)
 provider = services.build_service_provider()
 
 # Get services with proper type hints
-log_service = provider.get_service(LogService)  # Type hints work for concrete class
-email_service = provider.get_service(IEmailService)  # Type hints work for interface
-user_service = provider.get_service(IUserService)    # Type hints work for interface
-config_service = provider.get_service(IConfigService)  # Type hints work for interface
+log_service = provider.get_service(LogService)  # Type hints/code completion work for concrete class
+email_service = provider.get_service(IEmailService)  # Type hints/code completion work for interface
+user_service = provider.get_service(IUserService)   
+configuration = provider.get_service(IConfiguration) 
+
 
 # Use the services (IDE provides code completion for all methods)
 log_service.log("Application started")
 email_service.send_email("test@example.com", "Test", "Hello")
 user_service.notify_user("123", "Welcome!")
-config_value = config_service.get_config("api_key")
+config_value = configuration.get("app:api_key")
 log_service.log(f"Got config: {config_value}")
