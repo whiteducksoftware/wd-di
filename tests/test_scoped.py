@@ -1,0 +1,90 @@
+import pytest
+from wd_di.service_collection import ServiceCollection
+
+def test_scoped_service_from_root_fails():
+    # Define a simple scoped service.
+    class ScopedService:
+        pass
+
+    services = ServiceCollection()
+    services.add_scoped(ScopedService)
+    provider = services.build_service_provider()
+
+    # Attempting to resolve a scoped service directly from the root provider should fail.
+    with pytest.raises(Exception, match="Cannot resolve scoped service from the root provider"):
+        provider.get_service(ScopedService)
+
+def test_scoped_service_same_instance_in_scope():
+    # Define a simple scoped service.
+    class ScopedService:
+        pass
+
+    services = ServiceCollection()
+    services.add_scoped(ScopedService)
+    provider = services.build_service_provider()
+
+    # Within the same scope, multiple resolutions should yield the same instance.
+    with provider.create_scope() as scope:
+        instance1 = scope.get_service(ScopedService)
+        instance2 = scope.get_service(ScopedService)
+        assert instance1 is instance2
+
+def test_scoped_service_different_instances_in_different_scopes():
+    # Define a simple scoped service.
+    class ScopedService:
+        pass
+
+    services = ServiceCollection()
+    services.add_scoped(ScopedService)
+    provider = services.build_service_provider()
+
+    # Different scopes should produce different instances.
+    with provider.create_scope() as scope1:
+        instance1 = scope1.get_service(ScopedService)
+    with provider.create_scope() as scope2:
+        instance2 = scope2.get_service(ScopedService)
+    assert instance1 is not instance2
+
+def test_disposable_service_is_disposed():
+    # Define a disposable service that implements a dispose method.
+    class DisposableService:
+        def __init__(self):
+            self.is_disposed = False
+
+        def dispose(self):
+            self.is_disposed = True
+
+    services = ServiceCollection()
+    services.add_scoped(DisposableService)
+    provider = services.build_service_provider()
+    disposable_instance = None
+
+    # Within the scope, the instance is not disposed.
+    with provider.create_scope() as scope:
+        disposable_instance = scope.get_service(DisposableService)
+        assert not disposable_instance.is_disposed
+
+    # Exiting the scope should trigger disposal.
+    assert disposable_instance.is_disposed
+
+def test_close_method_is_called_for_disposable():
+    # Define a disposable service that uses a close method.
+    class DisposableService:
+        def __init__(self):
+            self.is_closed = False
+
+        def close(self):
+            self.is_closed = True
+
+    services = ServiceCollection()
+    services.add_scoped(DisposableService)
+    provider = services.build_service_provider()
+    disposable_instance = None
+
+    # Within the scope, the instance is not closed.
+    with provider.create_scope() as scope:
+        disposable_instance = scope.get_service(DisposableService)
+        assert not disposable_instance.is_closed
+
+    # Exiting the scope should trigger the close method.
+    assert disposable_instance.is_closed

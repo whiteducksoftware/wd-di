@@ -1,0 +1,27 @@
+[project]
+name = "wd-di"
+version = "0.1.0"
+description = ".NET Core Dependency Injection for Python"
+readme = "README.md"
+authors = [
+    { name = "Andre Ratzenberger", email = "andre.ratzenberger@whiteduck.de" }
+]
+requires-python = ">=3.12"
+dependencies = []
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "devtools>=0.12.2",
+    "loguru>=0.7.3",
+    "poethepoet>=0.32.2",
+    "pytest>=8.3.4",
+    "pytest-asyncio>=0.25.3",
+    "pytest-clarity>=1.0.1",
+    "pytest-cov>=6.0.0",
+    "pytest-sugar>=1.0.0",
+    "ruff>=0.9.6",
+]

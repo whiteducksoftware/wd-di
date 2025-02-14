@@ -1,0 +1,47 @@
+# tests/test_di.py
+
+from wd_di.service_collection import ServiceCollection
+
+
+# Define test services
+class IService:
+    def execute(self):
+        pass
+
+
+class ServiceA(IService):
+    def execute(self):
+        return "ServiceA"
+
+
+class ServiceB(IService):
+    def __init__(self, service_a: ServiceA):
+        self.service_a = service_a
+
+    def execute(self):
+        return f"ServiceB depends on {self.service_a.execute()}"
+
+
+def test_transient_services():
+    services = ServiceCollection()
+    services.add_transient(ServiceA)
+    services.add_transient(IService, ServiceB)
+
+    provider = services.build_service_provider()
+    service1 = provider.get_service(IService)
+    service2 = provider.get_service(IService)
+
+    assert service1 is not service2
+    assert service1.execute() == "ServiceB depends on ServiceA"
+
+
+def test_singleton_services():
+    services = ServiceCollection()
+    services.add_singleton(ServiceA)
+    services.add_singleton(IService, ServiceB)
+
+    provider = services.build_service_provider()
+    service1 = provider.get_service(IService)
+    service2 = provider.get_service(IService)
+
+    assert service1 is service2
