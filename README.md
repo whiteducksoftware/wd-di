@@ -4,7 +4,10 @@ WD-DI is a lightweight dependency injection library for Python inspired by .NET'
 
 Check this README.md for an overview of patterns supported by WD-DI.
 
-design_tutorial.md should provide some material for beginners on how to use DI to have a real positive impact on your software
+[design_tutorial.md](./docs/design_tutorial.md) should provide some material for beginners on how to use DI to have a real positive impact on your software
+
+[todo_until_feature_complete.md](./docs/todo_until_feature_complete.md) lists todos needed to be done to be feature congruent to .NET
+
 
 ---
 
@@ -391,3 +394,6 @@ user_service.notify_user("123", "Hello, welcome to WD-DI!")
 ```
 
 
+## License
+
+This project is licensed under the terms of the LICENSE file included in the repository.
