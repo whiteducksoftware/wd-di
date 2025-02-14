@@ -33,5 +33,5 @@ services.add_transient(OrderController)
 provider = services.build_service_provider()
 
 # Resolve the controller and simulate an order submission
-controller: OrderController = provider.get_service(OrderController)
+controller = provider.get_service(OrderController)
 controller.submit_order("order001", "Widget", 5, 19.99)

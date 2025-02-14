@@ -1,5 +1,6 @@
 # tests/test_di.py
 
+from typing import TYPE_CHECKING, Any, assert_type
 from wd.di.service_collection import ServiceCollection
 
 
@@ -44,4 +45,8 @@ def test_singleton_services():
     service1 = provider.get_service(IService)
     service2 = provider.get_service(IService)
 
+
+    assert_type(service1, IService)
     assert service1 is service2
+    assert isinstance(service1, IService) and isinstance(service1, ServiceB)
+    assert isinstance(service1, IService) and not isinstance(service1, ServiceA)

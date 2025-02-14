@@ -1,14 +1,22 @@
-from typing import Any, Dict, Type, Set, Optional, get_type_hints
+from typing import Any, Dict, Type, Set, Optional, get_type_hints, TypeVar, Generic, overload
 
 from .descriptors import ServiceDescriptor
 from .lifetimes import ServiceLifetime
+
+T = TypeVar('T')
 
 class ServiceProvider:
     def __init__(self, services: Dict[Type, ServiceDescriptor]):
         self._services = services
         self._singletons = {}
 
-    def get_service(self, service_type: Type, resolving: Optional[Set[Type]] = None) -> Any:
+    @overload
+    def get_service(self, service_type: Type[T]) -> T: ...
+
+    @overload
+    def get_service(self, service_type: Type[T], resolving: Optional[Set[Type]] = None) -> T: ...
+
+    def get_service(self, service_type: Type[T], resolving: Optional[Set[Type]] = None) -> T:
         if resolving is None:
             resolving = set()
         if service_type in resolving:
@@ -64,7 +72,13 @@ class Scope(ServiceProvider):
         self._scoped_instances = {}
         self._disposables = []
 
-    def get_service(self, service_type: Type, resolving: Optional[Set[Type]] = None) -> Any:
+    @overload
+    def get_service(self, service_type: Type[T]) -> T: ...
+
+    @overload
+    def get_service(self, service_type: Type[T], resolving: Optional[Set[Type]] = None) -> T: ...
+
+    def get_service(self, service_type: Type[T], resolving: Optional[Set[Type]] = None) -> T:
         if resolving is None:
             resolving = set()
         if service_type in resolving:

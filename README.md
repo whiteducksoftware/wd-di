@@ -84,6 +84,9 @@ class UserService:
 # Build the service provider and resolve services:
 provider = services.build_service_provider()
 user_service = provider.get_service(UserService)
+
+# with working code completion and resolved type for everything get_service returns!
+# see examples/type_hints_example.py
 ```
 
 **When to use:**  
