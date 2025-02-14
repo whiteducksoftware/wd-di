@@ -29,7 +29,7 @@ Service lifetimes define how instances of services are created and shared. WD-DI
 **Example:**
 
 ```python
-from wd_di import services
+from wd.di import services
 
 # Register services with explicit implementation types:
 services.add_transient(IService, ServiceImpl)   # Transient service
@@ -40,7 +40,7 @@ services.add_scoped(IService, ServiceImpl)      # Scoped service
 services.add_singleton(ServiceImpl)
 
 # Using decorators for cleaner registration:
-from wd_di.decorators import singleton, transient, scoped
+from wd.di.decorators import singleton, transient, scoped
 
 @singleton()
 class MyService:
@@ -100,8 +100,8 @@ WD-DI provides a configuration system that binds configuration data to strongly-
 
 ```python
 from dataclasses import dataclass
-from wd_di import services
-from wd_di.config import Configuration, Options
+from wd.di import services
+from wd.di.config import Configuration, Options
 
 # Define an options class for your configuration
 @dataclass
@@ -144,8 +144,8 @@ The middleware pipeline allows you to compose processing logic in a sequence. Th
 **Example:**
 
 ```python
-from wd_di import services
-from wd_di.middleware import IMiddleware, LoggingMiddleware, ValidationMiddleware
+from wd.di import services
+from wd.di.middleware import IMiddleware, LoggingMiddleware, ValidationMiddleware
 
 # Create custom middleware
 class AuthMiddleware(IMiddleware):
@@ -324,8 +324,8 @@ Below is a complete example that demonstrates how to set up and use WD-DI in a s
 
 ```python
 from dataclasses import dataclass
-from wd_di import services
-from wd_di.config import Configuration, Options
+from wd.di import services
+from wd.di.config import Configuration, Options
 
 # Define interfaces
 class IUserRepository:

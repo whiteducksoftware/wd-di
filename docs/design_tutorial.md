@@ -122,7 +122,7 @@ Centralize and modularize common tasks (logging, authentication, error handling)
 **Example:**
 
 ```python
-from wd_di.middleware import IMiddleware
+from wd.di.middleware import IMiddleware
 
 # A simple logging middleware that wraps request processing
 class LoggingMiddleware(IMiddleware):
@@ -166,7 +166,7 @@ Centralize configuration using strongly-typed options. This provides compile-tim
 
 ```python
 from dataclasses import dataclass
-from wd_di.config import Configuration, Options
+from wd.di.config import Configuration, Options
 
 @dataclass
 class AppConfig:
@@ -370,7 +370,7 @@ config = GlobalConfig.get_instance()
 **DI Solution:**
 ```python
 from dataclasses import dataclass
-from wd_di.config import Configuration, Options
+from wd.di.config import Configuration, Options
 
 @dataclass
 class AppConfig:
@@ -831,8 +831,8 @@ Now we'll integrate everything using WD-DI. The following code in `main.py` demo
 **File: `main.py`**
 
 ```python
-from wd_di import services
-from wd_di.config import Configuration, Options
+from wd.di import services
+from wd.di.config import Configuration, Options
 from infrastructure.config import AppConfig
 from infrastructure.logging_service import Logger
 from data.repository import OrderRepository
