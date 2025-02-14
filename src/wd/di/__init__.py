@@ -1,3 +1,6 @@
+from importlib.metadata import PackageNotFoundError, version
+
+
 from wd.di.service_collection import ServiceCollection
 from wd.di.middleware import (
     IMiddleware,
@@ -9,7 +12,12 @@ from wd.di.middleware import (
 )
 from wd.di.middleware_di import create_application_builder
 
-__version__ = "0.1.0"
+try:
+    __version__ = version("wd-di")
+except PackageNotFoundError:
+    __version__ = "0.1.1"
+
+
 services = ServiceCollection()
 
 # Attach extension methods

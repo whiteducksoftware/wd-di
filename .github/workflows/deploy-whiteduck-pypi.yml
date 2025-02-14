@@ -1,14 +1,48 @@
-# .github/workflows/publish.yml
+# .github/workflows/ci-and-publish.yml
 
-name: Publish Python Package
+name: CI and Publish
 
 on:
   push:
     branches:
-      - main # Replace with your default branch
+      - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
-  build-and-publish:
+  test:
+    name: Test on Python ${{ matrix.python-version }}
+    strategy:
+      matrix:
+        python-version:
+          - "3.10"
+          - "3.11"
+          - "3.12"
+          - "3.13"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install the project
+        run: uv sync
+
+      - name: Run tests
+        run: uv run pytest
+        # If you’re using pytest, you might use:
+        # run: pytest
+
+  publish:
+    name: Publish to PyPI on Python ${{ matrix.python-version }}
+    if: github.event_name == 'push'
+    needs: test
     strategy:
       matrix:
         python-version:
@@ -36,5 +70,5 @@ jobs:
       - name: Build the project
         run: uv build
 
-      - name: Publish to pypi
-        run: uv publish --token  ${{ secrets.PYPI_API_TOKEN }}
+      - name: Publish to PyPI
+        run: uv publish --token ${{ secrets.PYPI_API_TOKEN }}
