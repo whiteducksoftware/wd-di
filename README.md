@@ -1,6 +1,6 @@
 # WD-DI: .NET Style Dependency Injection for Python
 
-WD-DI is a lightweight dependency injection library for Python inspired by .NET's DI system. It provides a robust and flexible way to manage dependencies and lifetimes in your applications.
+WD-DI is a lightweight dependency injection library for Python inspired by .NET's DI system. It provides a robust and flexible way to manage dependencies and lifetimes in your applications. For the python purists: WD-DI needs no external libraries, just python std libraries.
 
 Check this README.md for an overview of patterns supported by WD-DI.
 
