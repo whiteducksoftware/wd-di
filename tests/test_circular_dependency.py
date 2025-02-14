@@ -1,5 +1,5 @@
 import pytest
-from wd_di.service_collection import ServiceCollection
+from wd.di.service_collection import ServiceCollection
 
 def test_circular_dependency_detection():
     # Define two classes that depend on each other

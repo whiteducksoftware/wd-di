@@ -1,13 +1,13 @@
 import pytest
 from dataclasses import dataclass
-from wd_di.config import (
+from wd.di.config import (
     Configuration,
     ConfigurationBuilder,
     Options,
     OptionsBuilder,
     IConfiguration,
 )
-from wd_di import services
+from wd.di import services
 
 
 @dataclass

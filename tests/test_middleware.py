@@ -1,14 +1,14 @@
 import pytest
 from dataclasses import dataclass
 from typing import List, Optional
-from wd_di.middleware import (
+from wd.di.middleware import (
     IMiddleware,
     MiddlewarePipeline,
     LoggingMiddleware,
     ValidationMiddleware,
     CachingMiddleware,
 )
-from wd_di import services
+from wd.di import services
 
 
 @dataclass

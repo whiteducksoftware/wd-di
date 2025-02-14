@@ -1,5 +1,5 @@
-from .service_collection import ServiceCollection
-from .middleware import (
+from wd.di.service_collection import ServiceCollection
+from wd.di.middleware import (
     IMiddleware,
     MiddlewarePipeline,
     LoggingMiddleware,
@@ -7,7 +7,7 @@ from .middleware import (
     CachingMiddleware,
     ExceptionHandlerMiddleware,
 )
-from .middleware_di import create_application_builder
+from wd.di.middleware_di import create_application_builder
 
 __version__ = "0.1.0"
 services = ServiceCollection()

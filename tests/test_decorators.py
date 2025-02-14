@@ -1,5 +1,5 @@
-from wd_di.decorators import singleton, transient
-from wd_di.service_collection import ServiceCollection
+from wd.di.decorators import singleton, transient
+from wd.di.service_collection import ServiceCollection
 
 
 @transient()

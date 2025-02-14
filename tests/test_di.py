@@ -1,6 +1,6 @@
 # tests/test_di.py
 
-from wd_di.service_collection import ServiceCollection
+from wd.di.service_collection import ServiceCollection
 
 
 # Define test services

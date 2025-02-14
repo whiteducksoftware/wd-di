@@ -1,5 +1,5 @@
 import pytest
-from wd_di.service_collection import ServiceCollection
+from wd.di.service_collection import ServiceCollection
 
 def test_scoped_service_from_root_fails():
     # Define a simple scoped service.
