@@ -1,5 +1,5 @@
 {
-	"name": "wd-di dev",
+	"name": "white duck devcontainer",
 	"image": "ghcr.io/astral-sh/uv:python3.12-bookworm",
 	"customizations": {
 		"vscode": {

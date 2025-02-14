@@ -743,9 +743,10 @@ Handles persistence and data operations.
 
 ```python
 from domain.interfaces import IOrderRepository
+from infrastructure.logging_service import Logger
 
 class OrderRepository(IOrderRepository):
-    def __init__(self, logger):
+    def __init__(self, logger: Logger):
         self.logger = logger
 
     def save_order(self, order):
@@ -764,9 +765,10 @@ Encapsulates your core business rules.
 ```python
 from domain.interfaces import IOrderService, IOrderRepository
 from domain.models import Order
+from infrastructure.logging_service import Logger
 
 class OrderService(IOrderService):
-    def __init__(self, repository: IOrderRepository, logger):
+    def __init__(self, repository: IOrderRepository, logger: Logger):
         self.repository = repository
         self.logger = logger
 
@@ -787,9 +789,10 @@ Provides the interface to interact with your application (e.g., a CLI or web con
 
 ```python
 from domain.models import Order
+from domain.interfaces import IOrderService
 
 class OrderController:
-    def __init__(self, order_service):
+    def __init__(self, order_service: IOrderService):
         self.order_service = order_service
 
     def submit_order(self, order_id, item, quantity, price):
@@ -853,10 +856,10 @@ services.configure(AppConfig, section="app")
 services.add_instance(Logger, Logger())
 
 # Register data access layer (repository)
-services.add_singleton(OrderRepository)
+services.add_singleton(IOrderRepository, OrderRepository)
 
 # Register business logic (order service)
-services.add_singleton(OrderService)
+services.add_singleton(IOrderService, OrderService)
 
 # Register presentation layer (controller)
 services.add_transient(OrderController)
@@ -893,4 +896,3 @@ In this tutorial, we've built a simple order processing application that demonst
 - **Leverage WD-DI** to wire all components together, ensuring proper management of service lifetimes and dependencies.
 
 By using WD-DI, you not only simplify dependency management but also establish a solid foundation for building scalable and maintainable applications. This design tutorial shows that dependency injection is far more than a theoretical concept—it’s a practical tool for crafting high-quality software architectures.
-
