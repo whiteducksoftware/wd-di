@@ -55,6 +55,8 @@ This example is designed to be dependency-free for demonstration purposes; the "
 
 ## Implementation
 
+a complete runable implementation can be found in `examples/complex_ingest`
+
 ```python
 from contextvars import ContextVar
 from typing import Dict, Callable, Type
@@ -145,6 +147,3 @@ if __name__ == "__main__":
     handle_request("Contoso", "contoso/luna.jpg", dummy_data)
     print("\n--- Simulating Globex request ---")
     handle_request("Globex", "globex/lucy.jpg", dummy_data)
-```
-
-This revised version should integrate much more smoothly into your MkDocs site. 
