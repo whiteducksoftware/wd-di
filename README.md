@@ -14,7 +14,7 @@ WD-DI brings the robust and flexible dependency injection patterns of .NET to yo
 
 **Full documentation can be found at [https://whiteducksoftware.github.io/wd-di/](https://whiteducksoftware.github.io/wd-di/) (or in the `/docs` directory).** 
 
-> For beginners, the **[Core Concepts](docs/core-concepts/index.md)** and **[Tutorials](docs/tutorial/index.md)** sections in the documentation are a great place to start to understand not just *how* to use DI, but *why* it's beneficial!
+> For beginners, the **[Core Concepts](https://whiteducksoftware.github.io/wd-di/core-concepts/)** and **[Tutorials](https://whiteducksoftware.github.io/wd-di/tutorial/)** sections in the documentation are a great place to start to understand not just *how* to use DI, but *why* it's beneficial!
 
 ---
 
@@ -23,7 +23,7 @@ WD-DI brings the robust and flexible dependency injection patterns of .NET to yo
 *   **Simplified Dependency Management:** Effortlessly manage object creation and lifecycles.
 *   **Enhanced Testability:** Easily mock dependencies for robust unit tests.
 *   **Modular Architecture:** Build loosely coupled, maintainable, and scalable applications.
-*   **Familiar Patterns:** Leverage .NET-inspired DI concepts like [service lifetimes (Singleton, Scoped, Transient)](docs/core-concepts/lifetimes.md), [constructor injection](docs/core-concepts/constructor-injection.md), and the [Options pattern for configuration](docs/core-concepts/configuration.md).
+*   **Familiar Patterns:** Leverage .NET-inspired DI concepts like [service lifetimes (Singleton, Scoped, Transient)](https://whiteducksoftware.github.io/wd-di/core-concepts/lifetimes/), [constructor injection](https://whiteducksoftware.github.io/wd-di/core-concepts/constructor-injection/), and the [Options pattern for configuration](https://whiteducksoftware.github.io/wd-di/core-concepts/configuration/).
 *   **Pythonic and Lightweight:** Clean, intuitive API that integrates smoothly into your Python projects.
 
 ---
