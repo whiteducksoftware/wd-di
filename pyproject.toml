@@ -1,12 +1,17 @@
 [project]
 name = "wd-di"
-version = "0.2.1"
+version = "0.2.2"
 description = ".NET Core Dependency Injection for Python"
 readme = "README.md"
 authors = [
     { name = "Andre Ratzenberger", email = "andre.ratzenberger@whiteduck.de" }
 ]
 license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
 requires-python = ">=3.10"
 dependencies = []
 
