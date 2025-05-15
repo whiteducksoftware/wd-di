@@ -60,7 +60,7 @@ WD-DI uses a `MiddlewareBuilder` (obtained via `services.create_application_buil
 **Example:**
 
 ```python
-from wd.di import ServiceCollection
+from wd.di import create_service_collection
 from wd.di.middleware import LoggingMiddleware # An example built-in
 # from .custom_middleware import CustomAuthMiddleware # Assuming CustomAuthMiddleware is defined
 
@@ -83,10 +83,10 @@ class RequestContext:
         self.path = path
         self.is_authenticated = is_authenticated
 
-services = ServiceCollection()
+sc = create_service_collection()
 
 # Create an application builder from the service collection
-app_builder = services.create_application_builder()
+app_builder = sc.create_application_builder()
 
 # Configure the middleware pipeline
 app_builder.configure_middleware(lambda builder: (

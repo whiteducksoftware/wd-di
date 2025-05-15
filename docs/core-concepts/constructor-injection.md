@@ -88,7 +88,49 @@ In this example:
 ## Benefits of Constructor Injection
 
 *   **Explicit Dependencies:** A class's dependencies are clearly listed in its constructor signature, making the class's requirements easy to understand.
-*   **Improved Testability:** When unit testing, you can easily pass mock or stub implementations of dependencies directly to the constructor, isolating the class under test.
+*   **Improved Testability:** When unit testing, you can easily pass mock or stub implementations of dependencies directly to the constructor, isolating the class under test. For example:
+    ```python
+    # --- Defining services (simplified for testability example) ---
+    from abc import ABC, abstractmethod
+
+    class IEmailService(ABC):
+        @abstractmethod
+        def send_email(self, recipient: str, subject: str, body: str):
+            pass
+
+    class UserService:
+        def __init__(self, email_service: IEmailService):
+            self.email_service = email_service
+
+        def notify_user(self, user_id: str, message: str):
+            # In a real app, fetch user's email, etc.
+            email_address = f"{user_id}@example.com"
+            self.email_service.send_email(email_address, "Notification", message)
+
+    # --- Test with a mock --- 
+    class MockEmailService(IEmailService):
+        def __init__(self):
+            self.sent_emails = []
+
+        def send_email(self, recipient: str, subject: str, body: str):
+            print(f"MOCK: Sending email to {recipient} - Subject: {subject}")
+            self.sent_emails.append({"to": recipient, "subject": subject, "body": body})
+
+    def test_user_service_notification():
+        mock_mailer = MockEmailService()
+        # Manually inject the mock when creating UserService for the test
+        user_service_for_test = UserService(email_service=mock_mailer)
+        
+        user_service_for_test.notify_user("testuser", "Your item has shipped!")
+        
+        assert len(mock_mailer.sent_emails) == 1
+        assert mock_mailer.sent_emails[0]["to"] == "testuser@example.com"
+        assert mock_mailer.sent_emails[0]["body"] == "Your item has shipped!"
+        print("Test passed: UserService correctly used the mock email service.")
+
+    # To run the test (typically done by a test runner like pytest):
+    # test_user_service_notification()
+    ```
 *   **Loose Coupling:** Classes don't create their dependencies; they receive them. This reduces coupling between components.
 *   **Compile-Time Safety (with Type Hints):** While Python is dynamically typed, type hints used for DI allow static analysis tools (like MyPy) to catch potential type mismatches early.
 *   **Readability and Maintainability:** Makes the flow of dependencies through your application easier to trace and manage.

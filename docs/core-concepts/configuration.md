@@ -39,23 +39,23 @@ WD-DI includes a robust configuration system inspired by .NET's Options pattern.
     ```
 3.  **Register `IConfiguration`:** Add your configuration object (an instance of `Configuration` or your custom `IConfiguration` implementation) to the service collection, usually as a singleton.
     ```python
-    from wd.di import ServiceCollection
+    from wd.di import create_service_collection
     from wd.di.config import Configuration, IConfiguration
 
-    services = ServiceCollection()
+    sc = create_service_collection()
     app_config = Configuration(config_data)
-    services.add_singleton(IConfiguration, app_config) # Or add_instance
+    sc.add_singleton_factory(IConfiguration, lambda _: app_config)
     ```
-4.  **Bind Configuration to Options:** Use `services.configure()` to tell WD-DI how to map a configuration section to your options dataclass.
+4.  **Bind Configuration to Options:** Use `sc.configure()` to tell WD-DI how to map a configuration section to your options dataclass.
     ```python
-    services.configure(DatabaseOptions, section="Database")
+    sc.configure(DatabaseOptions, section="Database")
     ```
-    This tells WD-DI: "When `Options[DatabaseOptions]` is requested, find the 'Database' section in `IConfiguration`, create an instance of `DatabaseOptions`, and populate it with data from that section."
+    This tells WD-DI: "When `Options[DatabaseOptions]` is requested, find the 'Database' section in `IConfiguration`, create an instance of `DatabaseOptions`, and populate it with data from that section (automatically converting PascalCase/camelCase keys from config to snake_case attributes in the dataclass)."
 5.  **Inject `Options[T]` into Services:** In your services, depend on `Options[YourConfigClass]` to access the configured values.
     ```python
     from wd.di.config import Options
 
-    @services.singleton()
+    @sc.singleton()
     class DatabaseService:
         def __init__(self, db_options: Options[DatabaseOptions]):
             self.options = db_options.value # Access the populated dataclass instance
@@ -64,7 +64,7 @@ WD-DI includes a robust configuration system inspired by .NET's Options pattern.
             print(f"DB Timeout: {self.options.timeout}") # Will be 30 (default)
 
     # --- Usage ---
-    provider = services.build_service_provider()
+    provider = sc.build_service_provider()
     db_service = provider.get_service(DatabaseService)
     # Expected Output:
     # DB Connection: your_db_connection_string
