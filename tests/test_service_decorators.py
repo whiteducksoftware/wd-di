@@ -86,7 +86,7 @@ def test_decorator_with_parameters_from_factory():
 
 def test_decorate_unregistered_service_raises_keyerror():
     services = ServiceCollection()
-    with pytest.raises(KeyError, match="No service registered for type .*IMessageHandler.*"):
+    with pytest.raises(KeyError, match=r"No service registered for IMessageHandler; cannot apply decorator\."):
         services.decorate(IMessageHandler, UppercaseDecoratorFactory)
 
 def test_decorate_after_provider_built_raises_invalidoperationerror():

@@ -111,9 +111,32 @@ class ServiceProvider:  # noqa: D101 – public runtime DI container
         # ---------- circular dependency guard ----------
         stack = _resolution_stack.get()
         frame = _key(service_type)
+
         if frame in stack:
-            cycle = stack[stack.index(frame) :] + [frame]
-            raise RuntimeError("Circular dependency detected: " + " -> ".join(cycle))
+            idx_frame_in_stack = stack.index(frame)
+            
+            # Check if this is a decorator-induced cycle:
+            # Service S is being resolved, its decorator D is invoked, and D (or its dependencies)
+            # tries to resolve S again.
+            # Stack would be: [..., S_key, D_key_for_S, ... (possibly other things if D calls other services)],
+            # and now 'frame' (S_key) is being requested again.
+            # 'desc' is the ServiceDescriptor for 'service_type' (whose key is 'frame').
+            if desc and desc.decorators and (idx_frame_in_stack + 1) < len(stack):
+                item_after_frame_in_stack = stack[idx_frame_in_stack + 1]
+                # These are the keys of decorators registered for the current service 'frame'.
+                decorator_keys_for_this_service = {_key(deco_factory) for deco_factory in desc.decorators}
+                
+                if item_after_frame_in_stack in decorator_keys_for_this_service:
+                    # The cycle is: frame -> item_after_frame (a decorator for frame) -> ... -> frame (current request)
+                    # This indicates the decorator 'item_after_frame_in_stack' (or something it called)
+                    # is trying to resolve 'frame' again.
+                    cycle_path = stack[idx_frame_in_stack:] + [frame]
+                    raise CircularDecoratorError(cycle_path)
+            
+            # If not a decorator cycle identified above, then it's a general circular dependency.
+            cycle_path = stack[idx_frame_in_stack:] + [frame]
+            raise RuntimeError("Circular dependency detected: " + " -> ".join(cycle_path))
+
         stack.append(frame)
         _resolution_stack.set(stack)
         try:
