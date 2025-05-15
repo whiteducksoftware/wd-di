@@ -29,14 +29,14 @@ WD-DI brings the robust and flexible dependency injection patterns of .NET to yo
 | ✅ Feature | WD-DI | Typical alternatives |
 |-----------|-------|----------------------|
 | **Pure-stdlib** (zero runtime deps) | ✔ | ✘ pull in pydantic / C-extensions |
-| **.NET-style lifetimes**<br>Transient • Singleton • **Scoped** (+ auto-dispose) | ✔ | Scoped rarely supported |
-| **Strongly-typed Options binding** from dict/JSON/env → dataclass | ✔ | Dicts or manual parsing |
-| **Decorator Pattern**	Built-in "wrap this service with that decorator" API? | ✔ | Only by manual implementation |
-| **Middleware pipeline** bundled & DI-aware (async-first) | ✔ | None ship a generic pipeline |
-| **Decorator-based registration tied to *your* `ServiceCollection`** (no globals) | ✔ | Global singletons or meta-classes |
-| **Thread-safe circular-dependency detection** via `ContextVar` | ✔ | Simple set → race-prone |
-| **Full IDE type inference** for `get_service()` | ✔ | Returns `Any` / needs `cast()` |
-| **Lean & readable** (~1.4 k LOC + robust test suite) | ✔ | wtf am I reading |
+| **.NET-style lifetimes**<br>Transient • Singleton • **Scoped** (+ auto-dispose) | ✔ | ✘ Scoped rarely supported |
+| **Strongly-typed Options binding** from dict/JSON/env → dataclass | ✔ | ✘ Dicts or manual parsing |
+| **Decorator Pattern**	Built-in "wrap this service with that decorator" API? | ✔ | ✘ Only by manual implementation |
+| **Middleware pipeline** bundled & DI-aware (async-first) | ✔ |✘ None ship a generic pipeline |
+| **Decorator-based registration tied to *your* `ServiceCollection`** (no globals) | ✔ | ✘ Global singletons or meta-classes |
+| **Thread-safe circular-dependency detection** via `ContextVar` | ✔ | ✘ Simple set → race-prone |
+| **Full IDE type inference** for `get_service()` | ✔ | ✘ Returns `Any` / needs `cast()` |
+| **Lean & readable** (~1.4 k LOC + robust test suite) | ✔ | ✘ wtf am I reading |
 
 ---
 
