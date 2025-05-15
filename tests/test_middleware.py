@@ -8,7 +8,7 @@ from wd.di.middleware import (
     ValidationMiddleware,
     CachingMiddleware,
 )
-from wd.di import services
+from wd.di import ServiceCollection
 
 
 @dataclass
@@ -17,7 +17,7 @@ class RequestContext:
     value: Optional[str] = None
 
 
-class TestMiddleware(IMiddleware):
+class HelperTestMiddleware(IMiddleware):
     def __init__(self):
         self.executed = False
         self.context_path = None
@@ -43,8 +43,8 @@ class ResultMiddleware(IMiddleware):
 @pytest.mark.asyncio
 async def test_middleware_pipeline_execution():
     pipeline = MiddlewarePipeline()
-    middleware = TestMiddleware()
-    pipeline.use_middleware(TestMiddleware, instance=middleware)
+    middleware = HelperTestMiddleware()
+    pipeline.use_middleware(HelperTestMiddleware, instance=middleware)
 
     context = RequestContext(path="/test")
     await pipeline.execute(context)
@@ -156,28 +156,22 @@ async def test_logging_middleware():
 
 @pytest.mark.asyncio
 async def test_di_integration():
-    # Reset services
-    services._services.clear()
+    services = ServiceCollection()
 
-    # Create application builder
     app = services.create_application_builder()
 
-    # Configure middleware
     app.configure_middleware(
         lambda builder: (
             builder.use_middleware(LoggingMiddleware)
-            .use_middleware(TestMiddleware)
+            .use_middleware(HelperTestMiddleware)
             .use_middleware(ResultMiddleware)
         )
     )
 
-    # Build provider
     provider = app.build()
 
-    # Get pipeline from DI
     pipeline = provider.get_service(MiddlewarePipeline)
 
-    # Execute pipeline
     result = await pipeline.execute(RequestContext(path="/test"))
 
     assert result == "result"
@@ -185,34 +179,28 @@ async def test_di_integration():
 
 @pytest.mark.asyncio
 async def test_di_middleware_dependencies():
-    # Reset services
-    services._services.clear()
+    services = ServiceCollection()
 
     class DependentMiddleware(IMiddleware):
-        def __init__(self, test_middleware: TestMiddleware):
+        def __init__(self, test_middleware: HelperTestMiddleware):
             self.test_middleware = test_middleware
 
         async def invoke(self, context, next):
             await self.test_middleware.invoke(context, next)
             return "dependent_result"
 
-    # Create application builder
     app = services.create_application_builder()
 
-    # Configure middleware with dependencies
     app.configure_middleware(
         lambda builder: (
-            builder.use_middleware(TestMiddleware).use_middleware(DependentMiddleware)
+            builder.use_middleware(HelperTestMiddleware).use_middleware(DependentMiddleware)
         )
     )
 
-    # Build provider
     provider = app.build()
 
-    # Get pipeline from DI
     pipeline = provider.get_service(MiddlewarePipeline)
 
-    # Execute pipeline
     result = await pipeline.execute(RequestContext(path="/test"))
 
     assert result == "dependent_result"

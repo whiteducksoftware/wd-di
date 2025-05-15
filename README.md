@@ -29,7 +29,10 @@ Service lifetimes define how instances of services are created and shared. WD-DI
 **Example:**
 
 ```python
-from wd.di import services
+from wd.di import ServiceCollection
+
+# Instantiate the collection
+services = ServiceCollection()
 
 # Register services with explicit implementation types:
 services.add_transient(IService, ServiceImpl)   # Transient service
@@ -40,19 +43,19 @@ services.add_scoped(IService, ServiceImpl)      # Scoped service
 services.add_singleton(ServiceImpl)
 
 # Using decorators for cleaner registration:
-from wd.di.decorators import singleton, transient, scoped
+# Decorators are now methods on the ServiceCollection instance
 
-@singleton()
+@services.singleton()
 class MyService:
     def do_something(self):
         pass
 
-@transient()
+@services.transient()
 class PerRequestService:
     def do_something(self):
         pass
 
-@scoped()
+@services.scoped()
 class ScopedService:
     def do_something(self):
         pass
@@ -73,7 +76,16 @@ WD-DI uses constructor injection to automatically resolve and inject dependencie
 **Example:**
 
 ```python
-@singleton()
+from wd.di import ServiceCollection
+
+services = ServiceCollection()
+
+# Assume DatabaseService is defined and registered, e.g.:
+# @services.singleton()
+# class DatabaseService:
+#     def query(self, sql: str): ...
+
+@services.singleton()
 class UserService:
     def __init__(self, db_service: DatabaseService):
         self.db = db_service
@@ -103,8 +115,10 @@ WD-DI provides a configuration system that binds configuration data to strongly-
 
 ```python
 from dataclasses import dataclass
-from wd.di import services
-from wd.di.config import Configuration, Options
+from wd.di import ServiceCollection
+from wd.di.config import Configuration, Options, IConfiguration
+
+services = ServiceCollection()
 
 # Define an options class for your configuration
 @dataclass
@@ -113,21 +127,22 @@ class DatabaseOptions:
     max_connections: int = 10
 
 # Create configuration from a dictionary (or JSON/environment variables)
-config = Configuration({
+config_data = {
     "database": {
         "connectionString": "mysql://localhost:3306/mydb",
         "maxConnections": 100
     }
-})
+}
+app_config = Configuration(config_data)
 
 # Register the configuration service
-services.add_singleton_factory(IConfiguration, lambda _: config)
+services.add_singleton_factory(IConfiguration, lambda _: app_config)
 
 # Bind the configuration to strongly-typed options
 services.configure(DatabaseOptions, section="database")
 
 # Use the options in your service
-@singleton()
+@services.singleton()
 class DatabaseService:
     def __init__(self, options: Options[DatabaseOptions]):
         self.connection_string = options.value.connection_string
@@ -147,13 +162,15 @@ The middleware pipeline allows you to compose processing logic in a sequence. Th
 **Example:**
 
 ```python
-from wd.di import services
-from wd.di.middleware import IMiddleware, LoggingMiddleware, ValidationMiddleware
+from wd.di import ServiceCollection
+from wd.di.middleware import IMiddleware, MiddlewarePipeline, LoggingMiddleware, ValidationMiddleware
+
+services = ServiceCollection()
 
 # Create custom middleware
 class AuthMiddleware(IMiddleware):
     async def invoke(self, context, next):
-        if not context.is_authenticated:
+        if not getattr(context, 'is_authenticated', False):
             raise ValueError("Not authenticated")
         return await next()
 
@@ -171,7 +188,9 @@ provider = app.build()
 pipeline = provider.get_service(MiddlewarePipeline)
 
 # Execute the pipeline with a context object
-result = await pipeline.execute(context)
+# class MockContext: is_authenticated = True # Example context
+# context = MockContext()
+# result = await pipeline.execute(context)
 ```
 
 **Built-in Middleware Components:**
@@ -194,12 +213,22 @@ Scoped services live only within a defined scope (e.g., a web request). WD-DI en
 **Example:**
 
 ```python
+from wd.di import ServiceCollection
+
+services = ServiceCollection()
+
+# Assume MyService is defined and registered as scoped, e.g.:
+# @services.scoped()
+# class MyService: ...
+# services.add_scoped(MyService) # Or using the decorator as shown above
+
 provider = services.build_service_provider()
 
 # Create a new scope
 with provider.create_scope() as scope:
-    scoped_service = scope.get_service(MyService)
+    # scoped_service = scope.get_service(MyService) # Assuming MyService is registered
     # Use the scoped service here
+    pass # Placeholder
 ```
 
 **When to use:**  
@@ -219,6 +248,10 @@ Register pre-created objects with the DI container. This is useful for sharing e
 **Example:**
 
 ```python
+from wd.di import ServiceCollection
+
+services = ServiceCollection()
+
 class MyLogger:
     def log(self, msg):
         print(msg)
@@ -247,6 +280,10 @@ Circular dependency detection safeguards your container against infinite recursi
 **Example:**
 
 ```python
+from wd.di import ServiceCollection
+
+services = ServiceCollection()
+
 # Define services with a circular dependency
 class ServiceA:
     def __init__(self, service_b: "ServiceB"):
@@ -264,11 +301,11 @@ provider = services.build_service_provider()
 try:
     provider.get_service(ServiceA)
 except Exception as e:
-    print(e)  # Output includes: "Circular dependency detected for service: ..."
+    print(e)  # Output now includes: "Circular dependency detected for service: <class '__main__.ServiceA'>. Resolution stack: [...ServiceA..., ...ServiceB..., ...ServiceA...]
 ```
 
 **When to use:**  
-This feature works automatically. It’s essential for catching configuration errors early during development when your dependency graph inadvertently contains cycles.
+This feature works automatically. It's essential for catching configuration errors early during development when your dependency graph inadvertently contains cycles.
 
 ---
 
@@ -280,6 +317,10 @@ WD-DI enforces explicit scope creation and automatically disposes scoped service
 **Example:**
 
 ```python
+from wd.di import ServiceCollection
+
+services = ServiceCollection()
+
 # Define a disposable service
 class DisposableResource:
     def __init__(self):
@@ -288,12 +329,16 @@ class DisposableResource:
     def dispose(self):
         self.disposed = True
 
-services.add_scoped(DisposableResource)
+@services.scoped()
+class RegisteredDisposableResource(DisposableResource):
+    pass
+
+# services.add_scoped(DisposableResource) # Or like this, if not using decorator on distinct class
 provider = services.build_service_provider()
 
 # Create a new scope and resolve a scoped service:
 with provider.create_scope() as scope:
-    resource = scope.get_service(DisposableResource)
+    resource = scope.get_service(RegisteredDisposableResource)
     print(resource.disposed)  # False; resource is active
 
 # After the scope, the resource is automatically disposed:
@@ -327,8 +372,10 @@ Below is a complete example that demonstrates how to set up and use WD-DI in a s
 
 ```python
 from dataclasses import dataclass
-from wd.di import services
-from wd.di.config import Configuration, Options
+from wd.di import ServiceCollection
+from wd.di.config import Configuration, Options, IConfiguration
+
+services = ServiceCollection()
 
 # Define interfaces
 class IUserRepository:
@@ -346,12 +393,12 @@ class EmailOptions:
     password: str = ""
 
 # Implement services
-@singleton()
+@services.singleton(IUserRepository)
 class UserRepository(IUserRepository):
     def get_user(self, user_id: str):
         return {"id": user_id, "name": "John Doe", "email": "john@example.com"}
 
-@singleton()
+@services.singleton(IEmailService)
 class EmailService(IEmailService):
     def __init__(self, options: Options[EmailOptions]):
         self.options = options.value
@@ -360,7 +407,7 @@ class EmailService(IEmailService):
         print(f"Sending email via {self.options.smtp_server}")
         # Email sending logic here
 
-@singleton()
+@services.singleton()
 class UserService:
     def __init__(self, repository: IUserRepository, email_service: IEmailService):
         self.repository = repository
@@ -375,7 +422,7 @@ class UserService:
         )
 
 # Configure services and options
-config = Configuration({
+app_config = Configuration({
     "email": {
         "smtpServer": "smtp.gmail.com",
         "port": 587,
@@ -384,11 +431,13 @@ config = Configuration({
     }
 })
 
-services.add_singleton_factory(IConfiguration, lambda _: config)
+services.add_singleton_factory(IConfiguration, lambda _: app_config)
 services.configure(EmailOptions, section="email")
 
-services.add_singleton(IUserRepository, UserRepository)
-services.add_singleton(IEmailService, EmailService)
+# These are now redundant due to decorators specifying interfaces
+# services.add_singleton(IUserRepository, UserRepository)
+# services.add_singleton(IEmailService, EmailService)
+# UserService is registered by its own decorator
 
 # Build and use the service provider
 provider = services.build_service_provider()

@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from wd.di import services
+from wd.di import ServiceCollection
 from wd.di.config import Configuration, IConfiguration
-from wd.di.decorators import singleton
+
+services = ServiceCollection()
 
 # Define interfaces
 class IEmailService(ABC):
@@ -31,14 +32,14 @@ services.add_singleton_factory(IConfiguration, lambda _: config)
 services.configure(AppConfig, section="app")
 
 # Implementations with decorators
-@singleton(IEmailService)  # Type hint works with interface
+@services.singleton(IEmailService)
 class EmailService(IEmailService):
     def send_email(self, to: str, subject: str, body: str) -> None:
         print(f"Sending email to {to}")
 
-@singleton(IUserService)  # Type hint works with interface
+@services.singleton(IUserService)
 class UserService(IUserService):
-    def __init__(self, email_service: IEmailService):  # Constructor injection with proper type
+    def __init__(self, email_service: IEmailService):
         self.email_service = email_service
 
     def notify_user(self, user_id: str, message: str) -> None:
@@ -47,19 +48,17 @@ class UserService(IUserService):
 
 
 # Service without interface - register directly with the class
+@services.singleton()
 class LogService:
     def log(self, message: str) -> None:
         print(f"[LOG] {message}")
-
-# Register the concrete class
-services.add_singleton(LogService)
 
 # Build provider
 provider = services.build_service_provider()
 
 # Get services with proper type hints
-log_service = provider.get_service(LogService)  # Type hints/code completion work for concrete class
-email_service = provider.get_service(IEmailService)  # Type hints/code completion work for interface
+log_service = provider.get_service(LogService)
+email_service = provider.get_service(IEmailService)
 user_service = provider.get_service(IUserService)   
 configuration = provider.get_service(IConfiguration) 
 

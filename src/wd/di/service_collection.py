@@ -1,6 +1,6 @@
 # di_container/service_collection.py
 
-from typing import Any, Callable, Dict, Optional, Type, TypeVar, TYPE_CHECKING, Generic
+from typing import Any, Callable, Dict, Optional, Type, TypeVar, TYPE_CHECKING, Generic, overload
 
 from .descriptors import ServiceDescriptor
 from .lifetimes import ServiceLifetime
@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
 
 T = TypeVar("T")
+S = TypeVar("S") # Added for decorator type hints
 
 
 class ServiceCollection:
@@ -36,18 +37,6 @@ class ServiceCollection:
             lifetime=ServiceLifetime.SINGLETON,
         )
         self._services[service_type] = descriptor
-
-    def transient(self, implementation_type: Type):
-        self.add_transient(implementation_type)
-        return implementation_type
-
-    def singleton(self, implementation_type: Type):
-        self.add_singleton(implementation_type)
-        return implementation_type
-
-    def scoped(self, implementation_type: Type):
-        self.add_scoped(implementation_type)
-        return implementation_type
 
     def add_transient(
         self, service_type: Type, implementation_type: Optional[Type] = None
@@ -106,3 +95,48 @@ class ServiceCollection:
                 raise Exception("Configuration service not registered") from e
 
         self.add_singleton_factory(Options[options_type], factory)  # type: ignore
+
+    # -- DECORATOR REGISTRATION -------------------------------------
+    @overload  # @services.singleton()
+    def singleton(self) -> Callable[[Type[T]], Type[T]]: ...
+    @overload  # @services.singleton(IMyInterface)
+    def singleton(self, service_type: Type[S]) -> Callable[[Type[T]], Type[T]]: ...
+
+    def singleton(self, service_type: Optional[Type[S]] = None) -> Callable[[Type[T]], Type[T]]:
+        def decorator(impl: Type[T]) -> Type[T]:
+            if service_type is None:
+                self.add_singleton(impl, impl)
+            else:
+                # We need to tell mypy that service_type is not None here.
+                # However, the overloads should handle the external type checking.
+                self.add_singleton(service_type, impl) # type: ignore
+            return impl
+        return decorator
+
+    @overload  # @services.transient()
+    def transient(self) -> Callable[[Type[T]], Type[T]]: ...
+    @overload  # @services.transient(IMyInterface)
+    def transient(self, service_type: Type[S]) -> Callable[[Type[T]], Type[T]]: ...
+
+    def transient(self, service_type: Optional[Type[S]] = None) -> Callable[[Type[T]], Type[T]]:
+        def decorator(impl: Type[T]) -> Type[T]:
+            if service_type is None:
+                self.add_transient(impl, impl)
+            else:
+                self.add_transient(service_type, impl) # type: ignore
+            return impl
+        return decorator
+
+    @overload  # @services.scoped()
+    def scoped(self) -> Callable[[Type[T]], Type[T]]: ...
+    @overload  # @services.scoped(IMyInterface)
+    def scoped(self, service_type: Type[S]) -> Callable[[Type[T]], Type[T]]: ...
+
+    def scoped(self, service_type: Optional[Type[S]] = None) -> Callable[[Type[T]], Type[T]]:
+        def decorator(impl: Type[T]) -> Type[T]:
+            if service_type is None:
+                self.add_scoped(impl, impl)
+            else:
+                self.add_scoped(service_type, impl) # type: ignore
+            return impl
+        return decorator
