@@ -1,0 +1,88 @@
+# mkdocs.yml
+site_name: WD-DI - .NET Style Dependency Injection for Python
+repo_url: https://github.com/whiteducksoftware/wd-di # Replace with your repo URL
+repo_name: whiteducksoftware/wd-di
+edit_uri: "" # Optional: Link to edit pages in repo
+
+# Theme Configuration
+theme:
+  name: material
+  # logo: assets/images/flock_logo_small.png # Removed logo for now
+  favicon: assets/images/favicon.png # Optional: Add a favicon
+  features:
+    - navigation.tabs
+    # - navigation.tabs.sticky # Optional
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes # Allows section index pages
+    - toc.integrate # Show TOC on the right
+    - search.suggest
+    - search.highlight
+    - content.code.annotate
+    - content.code.copy
+    # - content.tabs.link # If using code tabs
+  palette:
+    # Palette toggle for light/dark mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: orange # Set primary color for light mode
+      accent: deep orange # Set accent color for light mode (optional, can adjust)
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: orange # Set primary color for dark mode
+      accent: deep orange # Set accent color for dark mode (optional, can adjust)
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  icon:
+    repo: fontawesome/brands/github
+
+# Extensions
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - toc:
+      permalink: true
+  - attr_list
+  - md_in_html
+
+# Copyright
+copyright: Copyright © 2024 White Duck GmbH
+
+# Navigation Structure
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Core concepts:
+      - Service lifetimes: core-concepts/lifetimes.md
+      - Constructor injection: core-concepts/constructor-injection.md
+      - Configuration: core-concepts/configuration.md
+  - Middleware: middleware/overview.md
+  - Tutorial:
+      - "Step 1 – Domain": tutorial/01-domain.md
+      - "Step 2 – Services": tutorial/02-services.md
+      - "Step 3 – Wiring": tutorial/03-wiring.md
+  - API reference: api/service_collection.md
+  - Roadmap: roadmap.md
+
+
+extra_css:
+  - stylesheets/extra.css # Optional custom CSS
