@@ -145,6 +145,6 @@ def handle_request(tenant_id: str, filename: str, data: bytes) -> None:
 # 3. Demo run
 # ------------------------------------------------------------------
 if __name__ == "__main__":
-    handle_request("ACME", "examples/complex_ingest/assets/lucy.png", b"abc")
-    handle_request("Contoso", "examples/complex_ingest/assets/luna.png", b"def")
-    handle_request("Globex", "examples/complex_ingest/assets/lucy.png", b"ghi")
+    handle_request("ACME", "acme/lucy.jpg", open("examples/complex_ingest/assets/lucy.jpg", "rb").read())
+    handle_request("Contoso", "contoso/luna.jpg", open("examples/complex_ingest/assets/luna.jpg", "rb").read())
+    handle_request("Globex", "globex/lucy.jpg", open("examples/complex_ingest/assets/lucy.jpg", "rb").read())
