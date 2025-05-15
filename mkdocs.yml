@@ -92,8 +92,18 @@ nav:
     - "Part 1: Domain & Project Structure": tutorial/01-domain.md
     - "Part 2: Services & Infrastructure": tutorial/02-services.md
     - "Part 3: Presentation & Wiring": tutorial/03-wiring.md
+  - Advanced Examples:
+    - advanced-examples/index.md
+    - Multi-Tenant Ingestion: advanced-examples/multi-tenant-ingestion.md
   - API Reference:
-    - api/index.md # This will link to the placeholder API index
+    - api/index.md
+    - ServiceCollection: api/service_collection.md
+    - ServiceProvider & Scope: api/service_provider.md
+    - ServiceLifetime: api/lifetimes.md
+    - create_service_collection(): api/create_service_collection.md
+    - Middleware Components: api/middleware.md
+    - Middleware DI: api/middleware_di.md
+    - Configuration: api/config.md
   - Roadmap: roadmap.md
 
 

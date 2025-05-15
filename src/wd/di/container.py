@@ -130,7 +130,8 @@ class Scope(ServiceProvider):
                     # However, _parent_provider._create_instance(descriptor) is what was there.
                     # Let's refine to call parent's get_service if not in the passed cache.
                     # This assumes _root_singletons is the definitive cache passed down.
-                    self._root_singletons[service_type] = self._parent_provider.get_service(service_type)
+                    #self._root_singletons[service_type] = self._parent_provider.get_service(service_type)
+                    self._root_singletons[service_type] = self._parent_provider._create_instance(descriptor)
                 return self._root_singletons[service_type]
             else: # TRANSIENT
                 return self._create_instance(descriptor)
