@@ -1,11 +1,9 @@
 # WD-DI: .NET Style Dependency Injection for Python
 
-<!-- TODO: Add badges here (e.g., PyPI version, build status, code coverage, license) -->
-<!-- Example:
+
 [![PyPI version](https://badge.fury.io/py/wd-di.svg)](https://badge.fury.io/py/wd-di)
-[![Build Status](https://github.com/your-repo/wd-di/actions/workflows/ci.yml/badge.svg)](https://github.com/your-repo/wd-di/actions)
-...
--->
+[![Build Status](https://github.com/whiteducksoftware/wd-di/actions/workflows/deploy-whiteduck-pypi.yml/badge.svg)](https://github.com/whiteducksoftware/wd-di/actions)
+
 
 WD-DI brings the robust and flexible dependency injection patterns of .NET to your Python applications, with no external library dependencies—just Python's standard library.
 
