@@ -49,20 +49,6 @@ def test_transient_services_alt():
     assert service1.execute() == "ServiceB depends on ServiceA"
 
 
-def test_transient_services_alt():
-    # failing in 0.2.10
-    services = ServiceCollection() # Instantiate locally
-    services.add_transient(IService,ServiceA)
-    services.add_transient(IService, ServiceB)
-
-    provider = services.build_service_provider()
-    service1 = provider.get_service(IService)
-    service2 = provider.get_service(ServiceA)
-
-    assert service1 is not service2
-    assert service1.execute() == "ServiceB depends on ServiceA"
-
-
 def test_singleton_services():
     services = ServiceCollection() # Instantiate locally
     services.add_singleton(ServiceA)
