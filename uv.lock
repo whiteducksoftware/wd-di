@@ -993,7 +993,7 @@ wheels = [
 
 [[package]]
 name = "wd-di"
-version = "0.1.7"
+version = "0.2.9"
 source = { editable = "." }
 
 [package.dev-dependencies]
