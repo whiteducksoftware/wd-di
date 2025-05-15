@@ -56,8 +56,8 @@ class ServiceProvider:
         return Scope(self._services, self._singletons, self)
 
     def _create_instance(self, descriptor: ServiceDescriptor) -> Any:
-        if descriptor.implementation_factory:
-            return descriptor.implementation_factory(self)
+        if descriptor.factory:
+            return descriptor.factory(self)
         else:
             implementation_type = descriptor.implementation_type
             if implementation_type is None:
