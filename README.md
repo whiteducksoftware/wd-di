@@ -54,33 +54,46 @@ Experience clean, decoupled code with intuitive type-hinted dependency resolutio
 ```python
 from wd.di import ServiceCollection
 
-# 1. Create a service collection
 services = ServiceCollection()
 
-# 2. Define your services (interfaces optional but recommended)
+# Define interfaces and implementations
 class IEmailService:
-    def send(self, message: str): ...
+    def send_email(self, to: str, subject: str, body: str) -> None:
+        pass
 
-@services.singleton(IEmailService) # Register EmailService as a singleton for IEmailService
 class EmailService(IEmailService):
-    def send(self, message: str):
-        print(f"Sending email: {message}")
+    def send_email(self, to: str, subject: str, body: str) -> None:
+        print(f"\nSending email to {to}")
+        print(f"Subject: {subject}")
+        print(f"Body: {body}")
+        print("Email sent successfully\n")
 
-@services.transient() # Register NotifierService as transient (new instance each time)
-class NotifierService:
-    def __init__(self, emailer: IEmailService): # Dependency injected here!
-        self._emailer = emailer
+# UserService depends on IEmailService
+class UserService:
+    def __init__(self, email_service: IEmailService):
+        self.email_service = email_service
 
-    def notify_admin(self, alert: str):
-        self._emailer.send(f"Admin Alert: {alert}")
+    def notify_user(self, user_id: str, message: str) -> None:
+        self.email_service.send_email(f"user{user_id}@example.com", "Notification", message)
 
-# 3. Build the provider and resolve your top-level service
+# Register services
+services.add_singleton(IEmailService, EmailService)
+services.add_singleton(UserService)
+
+# Build provider
+# Services will be resolved and injected into services 
+# like EmailService into UserService
 provider = services.build_service_provider()
-notifier = provider.get_service(NotifierService) # Type is inferred!
 
-# 4. Use your services
-notifier.notify_admin("System critical!")
-# Output: Sending email: Admin Alert: System critical!
+# Get services with proper type hints
+email_service = provider.get_service(IEmailService)
+user_service = provider.get_service(UserService)
+
+# IDE will provide code completion for these methods
+# No need to cast or use Any
+email_service.send_email("test@example.com", "Test", "Hello")
+user_service.notify_user("123", "Welcome!")
+
 ```
 
 Dive into the **[full documentation](https://whiteducksoftware.github.io/wd-di/)** to explore service lifetimes, configuration, middleware, and more!

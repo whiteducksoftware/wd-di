@@ -1,6 +1,6 @@
 [project]
 name = "wd-di"
-version = "0.2.5"
+version = "0.2.6"
 description = ".NET Core Dependency Injection for Python"
 readme = "README.md"
 authors = [
