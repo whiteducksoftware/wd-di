@@ -1,8 +1,63 @@
 """
-Composition root:
-* Builds the DI container.
-* Creates a per-request scope containing the chosen tenant ID.
-* Demonstrates three different tenants using three different backends.
+====================================================================
+ 🌩️  Multi-tenant “upload” demo — WHY dependency injection helps
+====================================================================
+
+Goal
+----
+Pretend you run an ingestion service where *each* customer (tenant)
+insists on using their own cloud storage:
+
+    ┌────────────┐          ┌─────────┐
+    │  ACME Ltd. ├──►  AWS  │   S3    │
+    ├────────────┤          └─────────┘
+    │ Contoso    ├──► Azure Blob Storage
+    ├────────────┤
+    │  Globex    ├──► Google Cloud Storage
+    └────────────┘
+
+At runtime we receive an HTTP header like ``X-Tenant-Id: ACME`` and must
+upload the file to *that* tenant's backend.
+
+Why DI instead of if/elif spaghetti?
+------------------------------------
+* **Pluggable backends** - adding a new customer “DigitalOcean Spaces” is one mapping
+  entry, no changes elsewhere.
+* **Constructor injection** - a backend can depend on *other* services
+  (clock, logger, auth) and the container wires everything up.
+* **Easy testing** - swap real backends for an file system mock (like this demo)by
+  registering a different implementation before
+  ``build_service_provider()``.
+
+Key moving parts in this file
+-----------------------------
+1. ``ServiceCollection`` - registers *what* can be built.
+2. ``ContextVar`` *tenant* - carries the current tenant id through async
+   calls without passing it as a parameter everywhere.
+3. ``_storage_factory`` - looks up the tenant's backend in the
+   configuration and returns the proper concrete class.
+4. **Lifetimes**:
+   * ``IClock``  → **singleton** (one for the whole app)
+   * ``DataIngestionService`` → **scoped** (new per request / tenant)
+     ◦ **Why not singleton?**  
+       A singleton would hold on to whatever backend was injected for the
+       *first* request and all tenants would end up in S3 (or whichever
+       came first).
+
+Workflow
+--------
+* Main process builds the root provider.
+* Each request:
+  1. sets ``_current_tenant``,
+  2. opens a *scope* (so scoped services are fresh),
+  3. resolves ``DataIngestionService`` which, via the factory, gets the
+     right ``IBlobStorage`` for that tenant,
+  4. uploads the file,
+  5. disposes the scope.
+
+Everything here is dependency-free: the “cloud” backends live in memory,
+so you can `python app.py` and see it work instantly.
+
 """
 
 from contextvars import ContextVar
@@ -24,11 +79,11 @@ services = ServiceCollection()
 services.add_singleton(IClock, UtcClock)
 
 # DataIngestionService is *tenant-specific*: if we made it a singleton
-# it would capture the first tenant’s IBlobStorage instance and reuse it
+# it would capture the first tenant's IBlobStorage instance and reuse it
 # for every subsequent request. Try it out by changing it to a singleton.
 services.add_scoped(DataIngestionService)
 
-# Tenant configuration – could come from a file/env in real life
+# Tenant configuration - could come from a file/env in real life
 services.add_singleton_factory(
     IConfiguration,
     lambda _: Configuration(
@@ -48,7 +103,7 @@ _current_tenant: ContextVar[str] = ContextVar("tenant")
 # Runtime selector -------------------------------------------------
 def _storage_factory(sp, tenant_id: str) -> IBlobStorage:
     """
-    Map the tenant’s configured backend to the concrete implementation.
+    Map the tenant's configured backend to the concrete implementation.
     """
     backend = sp.get_service(IConfiguration).get(f"tenants:{tenant_id}:backend")
 
