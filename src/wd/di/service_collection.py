@@ -73,12 +73,15 @@ class ServiceCollection:
     
     def add_instance(self, service_type: Type, instance: Any):
         """
-        Register an already constructed instance as a singleton service.
-        This instance will be returned whenever service_type is requested.
+        Register an *already-constructed* object as a singleton.
+
+        We implement this by delegating to `add_singleton_factory`, wrapping the
+        instance in a trivial factory (`lambda _: instance`).  That lets the
+        existing provider logic—already designed to call factories for singletons—
+        do all the work, without touching `ServiceProvider`.
         """
-        descriptor = ServiceDescriptor(service_type, lifetime=ServiceLifetime.SINGLETON)
-        descriptor.instance = instance
-        self._services[service_type] = descriptor
+        # The lambda’s sole parameter is the ServiceProvider; it’s unused.
+        self.add_singleton_factory(service_type, lambda _: instance)
 
     def configure(
         self, options_type: Type[T], *, section: Optional[str] = None
