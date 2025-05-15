@@ -10,7 +10,7 @@
 <a href="https://bsky.app/profile/whiteduck-gmbh.bsky.social" target="_blank"><img alt="Bluesky" src="https://img.shields.io/badge/bluesky-Follow-blue?style=for-the-badge&logo=bluesky&logoColor=%23fff&color=%23333&labelColor=%230285FF&label=whiteduck-gmbh"></a>
 </p>
 
-WD-DI brings the robust and flexible dependency injection patterns of .NET to your Python applications, with no external library dependencies—just Python's standard library.
+WD-DI brings the robust and flexible dependency injection patterns of .NET to your Python applications, with no external library dependencies, just Python's standard library.
 
 **Full documentation can be found at [https://whiteducksoftware.github.io/wd-di/](https://whiteducksoftware.github.io/wd-di/) (or in the `/docs` directory).** 
 
