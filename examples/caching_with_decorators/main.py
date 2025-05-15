@@ -1,8 +1,8 @@
 # examples/caching_with_decorators/main.py
 import time
 from wd.di import ServiceCollection
-from .services import IExternalWeatherService, SlowExternalWeatherService
-from .decorators import create_caching_weather_decorator_factory
+from services import IExternalWeatherService, SlowExternalWeatherService
+from decorators import create_caching_weather_decorator_factory
 
 def main():
     print("--- Caching Decorator Example ---")

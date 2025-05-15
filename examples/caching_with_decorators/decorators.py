@@ -2,7 +2,7 @@
 import time
 from typing import Dict, Tuple
 from wd.di import ServiceProvider # Assuming ServiceProvider is available for type hinting
-from .services import IExternalWeatherService
+from services import IExternalWeatherService
 
 class CachingWeatherServiceDecorator(IExternalWeatherService):
     def __init__(self, inner: IExternalWeatherService, cache_duration_seconds: int = 60):
