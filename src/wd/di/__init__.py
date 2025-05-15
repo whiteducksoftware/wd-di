@@ -18,7 +18,9 @@ except PackageNotFoundError:
     __version__ = "0.1.1"
 
 
-services = ServiceCollection()
-
 # Attach extension methods
 ServiceCollection.create_application_builder = create_application_builder
+
+def create_service_collection() -> ServiceCollection:
+    """Return a brand-new, empty service collection."""
+    return ServiceCollection()

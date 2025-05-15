@@ -1,14 +1,14 @@
-from wd.di.decorators import singleton, transient
-from wd.di.service_collection import ServiceCollection
+from wd.di import ServiceCollection
 
+services = ServiceCollection()
 
-@transient()
+@services.transient()
 class FooService:
     def do_something(self):
         print("FooService doing something!")
 
 
-@singleton()
+@services.singleton()
 class BarService:
     def __init__(self, foo_service: FooService):
         self.foo_service = foo_service
@@ -19,11 +19,6 @@ class BarService:
 
 
 def test_decorators():
-    services = ServiceCollection()
-    # Register the services
-    services.add_transient(FooService)
-    services.add_singleton(BarService)
-    
     service_provider = services.build_service_provider()
     bar_service = service_provider.get_service(BarService)
     bar_service.do_something_else()

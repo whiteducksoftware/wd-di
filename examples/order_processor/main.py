@@ -1,11 +1,13 @@
 from domain.interfaces import IOrderRepository, IOrderService
-from wd.di import services
+from wd.di import ServiceCollection
 from wd.di.config import Configuration, IConfiguration
 from infrastructure.config import AppConfig
 from infrastructure.logging_service import Logger
 from data.repository import OrderRepository
 from services.order_service import OrderService
 from presentation.controller import OrderController
+
+services = ServiceCollection()
 
 # Configure application settings
 config = Configuration({

@@ -24,8 +24,8 @@ Here's the updated todo list with the "Instance Registration" feature now marked
 - [ ] **Improved Constructor Injection:**  
   Enhance dependency resolution to handle default parameter values and cases with missing or ambiguous type annotations.
 
-- [ ] **Thread Safety Improvements:**  
-  Review and enhance the container to be thread-safe in multi-threaded environments.
+- [x] **Thread Safety Improvements:**  
+  *Review and enhance the container to be thread-safe in multi-threaded environments.* (ContextVar for circular dependency stack implemented)
 
 ---
 
@@ -60,25 +60,27 @@ Here's the updated todo list with the "Instance Registration" feature now marked
 - [ ] **Documentation and Code Comments:**  
   Enhance inline documentation, add usage examples, and update the README to guide users.
 
-- [ ] **Refactor Global State:**  
-  Consider isolating or refactoring the global `services` instance to reduce side effects in testing and production environments.
+- [x] **Refactor Global State:**  
+  *The global `services` instance has been removed. DI container setup now requires explicit `ServiceCollection` instantiation.*
 
 ---
 
 #### 5. Additional Features
 
 - [ ] **Integration with Python Logging:**  
-  Replace default print statements in logging middleware with integration into Python’s standard logging module.
+  Replace default print statements in logging middleware with integration into Python's standard logging module.
 
 - [ ] **Support for Async Service Factories:**  
   Investigate and add support for asynchronous factory methods for services requiring async initialization.
 
 - [ ] **Dependency Injection Extensions:**  
-  Create helper functions or decorators for common patterns (e.g., function injection, async injection) to extend the framework’s usability.
+  Create helper functions or decorators for common patterns (e.g., function injection, async injection) to extend the framework's usability.
 
 ---
 
 ## Other ideas/Personal ideas
+
+(Assuming `from wd.di import ServiceCollection` and `services = ServiceCollection()` are defined for these conceptual snippets)
 
 1. **Service Discovery and Assembly Scanning**
 - Auto-registration of services based on decorators/attributes
@@ -92,13 +94,13 @@ services.add_singleton(IService, ServiceA, name="serviceA")
 services.add_singleton(IService, ServiceB, name="serviceB")
 
 # Enumerable resolution
-@singleton()
+@services.singleton() # Updated
 class Processor:
     def __init__(self, handlers: List[IHandler]):  # Inject all IHandler implementations
         self.handlers = handlers
 
 # Lazy resolution
-@singleton()
+@services.singleton() # Updated
 class Service:
     def __init__(self, lazy_dep: Lazy[ExpensiveService]):
         self._dep = lazy_dep  # Only created when accessed
@@ -107,7 +109,7 @@ class Service:
 3. **Better Async Support**
 ```python
 # Async service initialization
-@singleton()
+@services.singleton() # Updated
 class AsyncService:
     @classmethod
     async def create(cls):
@@ -115,7 +117,7 @@ class AsyncService:
         return cls()
 
 # Async disposal
-@singleton()
+@services.singleton() # Updated
 class AsyncDisposable:
     async def dispose(self):
         # Async cleanup
@@ -125,7 +127,9 @@ class AsyncDisposable:
 4. **Enhanced Configuration**
 ```python
 # Environment-specific configuration
-config = (ConfigurationBuilder()
+# (ConfigurationBuilder usage is independent of global services)
+config_builder = ConfigurationBuilder() # Assuming ConfigurationBuilder is imported
+config = (config_builder
     .add_json_file("appsettings.json")
     .add_json_file(f"appsettings.{env}.json", optional=True)
     .add_env_variables()
@@ -146,25 +150,25 @@ class AppConfig:
 5. **Service Replacement and Decoration**
 ```python
 # Replace existing registration
-services.replace_singleton(IService, NewImplementation)
+services.replace_singleton(IService, NewImplementation) # Assuming services is ServiceCollection
 
 # Decorate existing service
-services.decorate(IService, lambda service: LoggingDecorator(service))
+services.decorate(IService, lambda service: LoggingDecorator(service)) # Assuming services is ServiceCollection
 ```
 
 6. **Enhanced Validation**
 ```python
 # Validate service registration
-services.validate()  # Check for missing dependencies, circular references
+services.validate()  # Check for missing dependencies, circular references; Assuming services is ServiceCollection
 
 # Validate scoped service usage
-services.validate_scopes()  # Ensure scoped services aren't used in singletons
+services.validate_scopes()  # Ensure scoped services aren't used in singletons; Assuming services is ServiceCollection
 ```
 
 7. **Service Factory Support**
 ```python
 # Factory for creating services with runtime parameters
-@singleton()
+@services.singleton() # Updated
 class UserService:
     def __init__(self, connection_factory: Callable[[str], Connection]):
         self.connection_factory = connection_factory
@@ -178,40 +182,42 @@ services.add_singleton_factory(
 8. **Diagnostics and Debugging**
 ```python
 # Service resolution visualization
-services.print_dependency_graph()
+services.print_dependency_graph() # Assuming services is ServiceCollection
 
 # Resolution metrics
-services.get_metrics()  # Service creation times, counts, etc.
+services.get_metrics()  # Service creation times, counts, etc.; Assuming services is ServiceCollection
 ```
 
 9. **Middleware Enhancements**
 ```python
 # Ordered middleware
-services.use_middleware(AuthMiddleware, order=1)
-services.use_middleware(LoggingMiddleware, order=2)
+# (MiddlewareBuilder patterns are independent of global services, they use the passed ServiceCollection)
+# builder.use_middleware(AuthMiddleware, order=1)
+# builder.use_middleware(LoggingMiddleware, order=2)
 
 # Conditional middleware
-services.use_middleware_if(DebugMiddleware, lambda context: context.is_debug)
+# builder.use_middleware_if(DebugMiddleware, lambda context: context.is_debug)
 ```
 
 10. **Scope Features**
 ```python
 # Named scopes
-with provider.create_scope("request") as scope:
-    service = scope.get_service(MyService)
+# (Provider usage is independent of global services)
+# with provider.create_scope("request") as scope:
+#    service = scope.get_service(MyService)
 
 # Scope validation
-services.validate_scope_boundaries()
+# services.validate_scope_boundaries() # Assuming services is ServiceCollection
 
 # Scope events
-scope.on_disposing(lambda: cleanup_resources())
+# scope.on_disposing(lambda: cleanup_resources())
 ```
 
 11. **Extended Type Support**
 ```python
 # Generic service support
-services.add_singleton(Repository[User])
-services.add_singleton(Repository[Order])
+services.add_singleton(Repository[User]) # Assuming services is ServiceCollection
+services.add_singleton(Repository[Order]) # Assuming services is ServiceCollection
 
 # Optional dependencies
 def __init__(self, optional: Optional[IService] = None):
@@ -221,10 +227,11 @@ def __init__(self, optional: Optional[IService] = None):
 12. **Testing Utilities**
 ```python
 # Mock service provider
-mock_provider = MockServiceProvider()
-mock_provider.setup(IService).returns(mock_service)
+# (This is a conceptual mock, not directly tied to the global services change)
+# mock_provider = MockServiceProvider()
+# mock_provider.setup(IService).returns(mock_service)
 
 # Service collection snapshots
-snapshot = services.create_snapshot()
+# snapshot = services.create_snapshot() # Assuming services is ServiceCollection
 # Make changes
-services.restore_snapshot(snapshot)
+# services.restore_snapshot(snapshot) # Assuming services is ServiceCollection

@@ -1,12 +1,13 @@
 import pytest
-from wd.di.service_collection import ServiceCollection
+# from wd.di.service_collection import ServiceCollection # Old import path
+from wd.di import ServiceCollection # Correct import path
 
 def test_scoped_service_from_root_fails():
+    services = ServiceCollection() # Instantiate locally
     # Define a simple scoped service.
     class ScopedService:
         pass
 
-    services = ServiceCollection()
     services.add_scoped(ScopedService)
     provider = services.build_service_provider()
 
@@ -15,11 +16,11 @@ def test_scoped_service_from_root_fails():
         provider.get_service(ScopedService)
 
 def test_scoped_service_same_instance_in_scope():
+    services = ServiceCollection() # Instantiate locally
     # Define a simple scoped service.
     class ScopedService:
         pass
 
-    services = ServiceCollection()
     services.add_scoped(ScopedService)
     provider = services.build_service_provider()
 
@@ -30,11 +31,11 @@ def test_scoped_service_same_instance_in_scope():
         assert instance1 is instance2
 
 def test_scoped_service_different_instances_in_different_scopes():
+    services = ServiceCollection() # Instantiate locally
     # Define a simple scoped service.
     class ScopedService:
         pass
 
-    services = ServiceCollection()
     services.add_scoped(ScopedService)
     provider = services.build_service_provider()
 
@@ -46,6 +47,7 @@ def test_scoped_service_different_instances_in_different_scopes():
     assert instance1 is not instance2
 
 def test_disposable_service_is_disposed():
+    services = ServiceCollection() # Instantiate locally
     # Define a disposable service that implements a dispose method.
     class DisposableService:
         def __init__(self):
@@ -54,7 +56,6 @@ def test_disposable_service_is_disposed():
         def dispose(self):
             self.is_disposed = True
 
-    services = ServiceCollection()
     services.add_scoped(DisposableService)
     provider = services.build_service_provider()
     disposable_instance = None
@@ -68,6 +69,7 @@ def test_disposable_service_is_disposed():
     assert disposable_instance.is_disposed
 
 def test_close_method_is_called_for_disposable():
+    services = ServiceCollection() # Instantiate locally
     # Define a disposable service that uses a close method.
     class DisposableService:
         def __init__(self):
@@ -76,7 +78,6 @@ def test_close_method_is_called_for_disposable():
         def close(self):
             self.is_closed = True
 
-    services = ServiceCollection()
     services.add_scoped(DisposableService)
     provider = services.build_service_provider()
     disposable_instance = None

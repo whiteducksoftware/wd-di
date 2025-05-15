@@ -1,10 +1,11 @@
 # tests/test_di.py
 
 from typing import assert_type
-from wd.di.service_collection import ServiceCollection
+# from wd.di.service_collection import ServiceCollection # Old import path
+from wd.di import ServiceCollection # Correct import path
 
 
-# Define test services
+# Define test services - these are fine at module level
 class IService:
     def execute(self):
         pass
@@ -24,7 +25,7 @@ class ServiceB(IService):
 
 
 def test_transient_services():
-    services = ServiceCollection()
+    services = ServiceCollection() # Instantiate locally
     services.add_transient(ServiceA)
     services.add_transient(IService, ServiceB)
 
@@ -37,7 +38,7 @@ def test_transient_services():
 
 
 def test_singleton_services():
-    services = ServiceCollection()
+    services = ServiceCollection() # Instantiate locally
     services.add_singleton(ServiceA)
     services.add_singleton(IService, ServiceB)
 

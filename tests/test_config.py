@@ -7,7 +7,7 @@ from wd.di.config import (
     OptionsBuilder,
     IConfiguration,
 )
-from wd.di import services
+from wd.di import ServiceCollection
 
 
 @dataclass
@@ -86,10 +86,8 @@ def test_options_builder():
 
 
 def test_options_di_integration():
-    # Reset services
-    services._services.clear()
+    services = ServiceCollection()
 
-    # Setup configuration
     config = Configuration(
         {
             "database": {"connectionString": "test-connection", "maxConnections": 5},
@@ -97,19 +95,15 @@ def test_options_di_integration():
         }
     )
 
-    # Register services
     services.add_singleton_factory(IConfiguration, lambda sp: config)
     services.configure(DatabaseOptions, section="database")
     services.configure(AppSettings, section="app")
 
-    # Build service provider
     provider = services.build_service_provider()
 
-    # Resolve options
     db_options = provider.get_service(Options[DatabaseOptions])
     app_options = provider.get_service(Options[AppSettings])
 
-    # Assert
     assert db_options.value.connection_string == "test-connection"
     assert db_options.value.max_connections == 5
     assert app_options.value.name == "TestApp"
@@ -117,28 +111,23 @@ def test_options_di_integration():
 
 
 def test_options_without_configuration():
-    # Reset services
-    services._services.clear()
+    services = ServiceCollection()
 
-    # Configure options without providing configuration
     services.configure(DatabaseOptions)
     provider = services.build_service_provider()
 
-    # Should raise an exception when configuration service is not registered
     with pytest.raises(Exception, match="Configuration service not registered"):
         provider.get_service(Options[DatabaseOptions])
 
 
 def test_options_missing_section():
-    # Reset services
-    services._services.clear()
+    services = ServiceCollection()
 
     config = Configuration({})
     services.add_singleton_factory(IConfiguration, lambda sp: config)
     services.configure(DatabaseOptions, section="database")
     provider = services.build_service_provider()
 
-    # Should return default values when section is missing
     db_options = provider.get_service(Options[DatabaseOptions])
     assert db_options.value.connection_string == ""
     assert db_options.value.max_connections == 10

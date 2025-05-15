@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-from wd.di import services
+from wd.di import ServiceCollection
+
+services = ServiceCollection()
 
 # Define interfaces and implementations
 class IEmailService(ABC):

@@ -31,13 +31,18 @@ Break your application into components with clear responsibilities. Use construc
 **Example:**
 
 ```python
+from wd.di import ServiceCollection
+
+services = ServiceCollection()
+
 # EmailService: A service responsible for sending emails
 class EmailService:
     def send_email(self, recipient: str, subject: str, body: str):
         print(f"Sending email to {recipient}")
+services.add_singleton(EmailService)
 
 # UserService: Depends on EmailService for notifications
-@singleton()
+@services.singleton()
 class UserService:
     def __init__(self, email_service: EmailService):
         self.email_service = email_service
@@ -47,9 +52,6 @@ class UserService:
         self.email_service.send_email("user@example.com", "Notification", message)
 
 # Register and use the services:
-services.add_singleton(EmailService)
-services.add_singleton(UserService)
-
 provider = services.build_service_provider()
 user_service = provider.get_service(UserService)
 user_service.notify("123", "Your order has shipped!")
@@ -71,6 +73,9 @@ Define interfaces (or abstract base classes) and register implementations agains
 
 ```python
 from abc import ABC, abstractmethod
+from wd.di import ServiceCollection
+
+services = ServiceCollection()
 
 # Define an interface for user repository
 class IUserRepository(ABC):
@@ -79,13 +84,12 @@ class IUserRepository(ABC):
         pass
 
 # Implementation of the repository interface
-@singleton()
+@services.singleton(IUserRepository)
 class UserRepository(IUserRepository):
     def get_user(self, user_id: str):
         return {"id": user_id, "name": "John Doe"}
 
 # Register the interface and its implementation:
-services.add_singleton(IUserRepository, UserRepository)
 ```
 
 **Lifetimes Matter**
@@ -100,13 +104,22 @@ Select service lifetimes based on the nature of the dependency:
 
 ```python
 # Transient: A new instance is created each time
-services.add_transient(IService, ServiceImpl)
+# Assuming IService and ServiceImpl are defined elsewhere for this snippet
+# services.add_transient(IService, ServiceImpl)
 
 # Singleton: One instance is shared application-wide
-services.add_singleton(IService, ServiceImpl)
+# services.add_singleton(IService, ServiceImpl)
 
 # Scoped: One instance per explicit scope
-services.add_scoped(IService, ServiceImpl)
+# services.add_scoped(IService, ServiceImpl)
+
+# More concrete example using decorators:
+# @services.transient()
+# class MyTransientService(IService): pass
+# @services.singleton()
+# class MySingletonService(IService): pass
+# @services.scoped()
+# class MyScopedService(IService): pass
 ```
 
 **When to use:**  
@@ -122,7 +135,10 @@ Centralize and modularize common tasks (logging, authentication, error handling)
 **Example:**
 
 ```python
+from wd.di import ServiceCollection, MiddlewarePipeline
 from wd.di.middleware import IMiddleware
+
+services = ServiceCollection()
 
 # A simple logging middleware that wraps request processing
 class LoggingMiddleware(IMiddleware):
@@ -149,7 +165,7 @@ async def run_pipeline():
     result = await pipeline.execute(DummyContext())
     return result
 
-asyncio.run(run_pipeline())
+# asyncio.run(run_pipeline()) # Commented out for non-blocking snippet
 ```
 
 **When to use:**  
@@ -166,7 +182,10 @@ Centralize configuration using strongly-typed options. This provides compile-tim
 
 ```python
 from dataclasses import dataclass
-from wd.di.config import Configuration, Options
+from wd.di import ServiceCollection
+from wd.di.config import Configuration, Options, IConfiguration
+
+services = ServiceCollection()
 
 @dataclass
 class AppConfig:
@@ -174,18 +193,18 @@ class AppConfig:
     api_key: str = ""
 
 # Create and register configuration
-config = Configuration({
+app_specific_config = Configuration({
     "app": {
         "debug": True,
         "apiKey": "secret-key"
     }
 })
 
-services.add_singleton_factory(IConfiguration, lambda _: config)
+services.add_singleton_factory(IConfiguration, lambda _: app_specific_config)
 services.configure(AppConfig, section="app")
 
 # Example service that uses configuration:
-@singleton()
+@services.singleton()
 class AppService:
     def __init__(self, options: Options[AppConfig]):
         self.config = options.value
@@ -214,6 +233,9 @@ Using DI improves testability by allowing easy injection of mocks or stubs. Cons
 **Example:**
 
 ```python
+# (Assuming UserService and EmailService definitions from previous examples,
+# with UserService decorated with @services.singleton() and EmailService also registered)
+
 # A mock version of EmailService for testing purposes
 class MockEmailService:
     def send_email(self, recipient, subject, body):
@@ -221,7 +243,9 @@ class MockEmailService:
 
 # Testing UserService with a mock dependency:
 def test_user_service():
-    # Inject the mock email service directly
+    # Manually instantiate UserService with the mock. 
+    # This is for unit testing the UserService logic in isolation.
+    # The actual EmailService (if needed by UserService) would be DI-injected in real app.
     user_service = UserService(email_service=MockEmailService())
     user_service.notify("123", "Test Message")
 
@@ -242,6 +266,8 @@ Structure your application into layers (Domain, Data Access, Presentation, Infra
 
 **Example:**
 
+(Assuming `from wd.di import ServiceCollection` and `services = ServiceCollection()` are defined at the beginning of the script/module context for these snippets)
+
 **Domain Layer:**
 
 ```python
@@ -252,7 +278,7 @@ class IOrderService(ABC):
     def process_order(self, order_id: str):
         pass
 
-@singleton()
+@services.singleton(IOrderService) # Updated decorator
 class OrderService(IOrderService):
     def process_order(self, order_id: str):
         print(f"Processing order {order_id}")
@@ -261,12 +287,14 @@ class OrderService(IOrderService):
 **Data Access Layer:**
 
 ```python
+# from abc import ABC, abstractmethod # Already imported above
+
 class IOrderRepository(ABC):
     @abstractmethod
     def get_order(self, order_id: str):
         pass
 
-@singleton()
+@services.singleton(IOrderRepository) # Updated decorator
 class OrderRepository(IOrderRepository):
     def get_order(self, order_id: str):
         return {"id": order_id, "item": "Book"}
@@ -275,7 +303,7 @@ class OrderRepository(IOrderRepository):
 **Presentation Layer:**
 
 ```python
-@transient()
+@services.transient() # Updated decorator (OrderController typically transient)
 class OrderController:
     def __init__(self, order_service: IOrderService):
         self.order_service = order_service
@@ -293,16 +321,17 @@ class Logger:
         print(f"LOG: {msg}")
 
 logger_instance = Logger()
-services.add_instance(Logger, logger_instance)
+services.add_instance(Logger, logger_instance) # Uses the 'services' instance
 ```
 
 **Assembling the Application:**
 
 ```python
 # Register layers with the DI container:
-services.add_singleton(IOrderService, OrderService)
-services.add_singleton(IOrderRepository, OrderRepository)
-services.add_transient(OrderController)
+# These are now redundant if decorators on classes specify interfaces:
+# services.add_singleton(IOrderService, OrderService)
+# services.add_singleton(IOrderRepository, OrderRepository)
+# services.add_transient(OrderController) # OrderController is registered by its decorator
 
 provider = services.build_service_provider()
 controller = provider.get_service(OrderController)
@@ -324,21 +353,23 @@ Begin with a minimal DI setup. As your project grows, add more sophisticated reg
 **Example:**
 
 ```python
-# Start by registering core services:
-services.add_singleton(DatabaseService)
-services.add_singleton(UserService)
+# (Assuming services = ServiceCollection() is defined)
+# (Assuming DatabaseService and UserService are defined and decorated)
+
+# Start by registering core services (now likely done via decorators on the classes):
+# services.add_singleton(DatabaseService) # If DatabaseService is @services.singleton()
+# services.add_singleton(UserService)    # If UserService is @services.singleton()
 
 # Later, as the project evolves, integrate additional layers and middleware:
+# (Assuming LoggingMiddleware is defined)
 app = services.create_application_builder()
 app.configure_middleware(lambda builder: (
-    builder.use_middleware(LoggingMiddleware)
+    builder.use_middleware(LoggingMiddleware) # Assuming LoggingMiddleware can be resolved by DI
 ))
 ```
 
 **When to use:**  
 Adopt an incremental approach. Begin with essential services and progressively integrate advanced patterns like middleware pipelines, dynamic configuration, and custom lifetime management.
-
-
 
 ### 8. Common Python Anti-Patterns and DI Solutions
 
@@ -370,14 +401,22 @@ config = GlobalConfig.get_instance()
 **DI Solution:**
 ```python
 from dataclasses import dataclass
-from wd.di.config import Configuration, Options
+from wd.di import ServiceCollection # Added
+from wd.di.config import Configuration, Options, IConfiguration # Added IConfiguration
+
+services = ServiceCollection() # Added
 
 @dataclass
 class AppConfig:
     api_key: str
     debug: bool
 
-@singleton()
+# Assuming configuration is loaded and IConfiguration is registered e.g.:
+# app_specific_config = Configuration({"app": {"api_key": "actual_key", "debug": True}})
+# services.add_singleton_factory(IConfiguration, lambda _: app_specific_config)
+services.configure(AppConfig, section="app")
+
+@services.singleton() # Updated decorator
 class ConfiguredService:
     def __init__(self, options: Options[AppConfig]):
         self.config = options.value
@@ -387,8 +426,7 @@ class ConfiguredService:
             print("Debug mode")
 
 # Register in your DI container
-services.configure(AppConfig, section="app")
-services.add_singleton(ConfiguredService)
+# services.add_singleton(ConfiguredService) # Redundant due to decorator
 ```
 
 #### Hidden Dependencies and Import-Time Side Effects
@@ -416,13 +454,16 @@ user = repo.get_user(123)
 ```python
 from abc import ABC, abstractmethod
 import sqlite3
+from wd.di import ServiceCollection # Added
+
+services = ServiceCollection() # Added
 
 class IDatabase(ABC):
     @abstractmethod
     def execute(self, query: str, params: tuple):
         pass
 
-@singleton()
+# Database implementation requires connection_string. We'll use a factory.
 class Database(IDatabase):
     def __init__(self, connection_string: str):
         self.connection = sqlite3.connect(connection_string)
@@ -431,7 +472,10 @@ class Database(IDatabase):
         cursor = self.connection.cursor()
         return cursor.execute(query, params)
 
-@singleton()
+# Register Database using a factory to provide connection_string
+services.add_singleton_factory(IDatabase, lambda sp: Database("app.db"))
+
+@services.singleton() # Updated decorator for UserRepository
 class UserRepository:
     def __init__(self, db: IDatabase):
         self.db = db
@@ -440,8 +484,7 @@ class UserRepository:
         return self.db.execute("SELECT * FROM users WHERE id = ?", (user_id,))
 
 # Register with DI:
-services.add_singleton(IDatabase, Database, connection_string="app.db")
-services.add_singleton(UserRepository)
+# services.add_singleton(UserRepository) # Redundant due to decorator
 ```
 
 #### Module-Level Logic and Circular Dependencies
@@ -466,6 +509,7 @@ def get_user_orders(user_id):
 **DI Solution:**
 ```python
 from abc import ABC, abstractmethod
+# Assuming services = ServiceCollection() is defined
 
 class IOrderService(ABC):
     @abstractmethod
@@ -477,12 +521,12 @@ class IUserService(ABC):
     def get_user_details(self, user_id: str) -> dict:
         pass
 
-@singleton()
+@services.singleton(IOrderService) # Updated decorator
 class OrderService(IOrderService):
     def get_user_orders(self, user_id: str) -> list:
         return [{"order_id": 1}]
 
-@singleton()
+@services.singleton(IUserService) # Updated decorator
 class UserService(IUserService):
     def __init__(self, order_service: IOrderService):
         self.order_service = order_service
@@ -491,9 +535,9 @@ class UserService(IUserService):
         orders = self.order_service.get_user_orders(user_id)
         return {"id": user_id, "orders": orders}
 
-# Register with DI:
-services.add_singleton(IOrderService, OrderService)
-services.add_singleton(IUserService, UserService)
+# Register with DI (now redundant due to decorators with interfaces):
+# services.add_singleton(IOrderService, OrderService)
+# services.add_singleton(IUserService, UserService)
 ```
 
 #### Monolithic Classes with Mixed Responsibilities
@@ -522,7 +566,10 @@ class UserManager:
 
 **DI Solution:**
 ```python
-@singleton()
+# Assuming services = ServiceCollection() is defined
+# Assuming IDatabase, Options[SmtpConfig], SmtpConfig, ILogger are defined and registered
+
+@services.singleton() # Updated (or @services.singleton(IUserRepository) if IUserRepository exists)
 class UserRepository:
     def __init__(self, db: IDatabase):
         self.db = db
@@ -533,22 +580,22 @@ class UserRepository:
             (email, password)
         )
 
-@singleton()
+@services.singleton() # Updated (or @services.singleton(IEmailService) if IEmailService exists)
 class EmailService:
-    def __init__(self, smtp_config: Options[SmtpConfig]):
+    def __init__(self, smtp_config: Options[SmtpConfig]): # Assuming SmtpConfig and Options are set up
         self.config = smtp_config.value
     
     def send_welcome_email(self, email: str):
         # Email sending logic here
         pass
 
-@singleton()
+@services.singleton() # Updated
 class UserService:
     def __init__(
         self,
-        repository: UserRepository,
-        email_service: EmailService,
-        logger: ILogger
+        repository: UserRepository, # Or IUserRepository
+        email_service: EmailService, # Or IEmailService
+        logger: ILogger # Assuming ILogger is an interface and a Logger implementation is registered
     ):
         self.repository = repository
         self.email_service = email_service
@@ -582,6 +629,9 @@ class OrderProcessor:
 
 **DI Solution:**
 ```python
+# from abc import ABC, abstractmethod # Already imported or assumed
+# Assuming services = ServiceCollection() is defined
+
 class ITaxCalculator(ABC):
     @abstractmethod
     def calculate_tax(self, amount: float) -> float:
@@ -592,17 +642,17 @@ class IPaymentValidator(ABC):
     def validate_credit_card(self, number: str) -> bool:
         pass
 
-@singleton()
+@services.singleton(ITaxCalculator) # Updated decorator
 class DefaultTaxCalculator(ITaxCalculator):
     def calculate_tax(self, amount: float) -> float:
         return amount * 0.2
 
-@singleton()
+@services.singleton(IPaymentValidator) # Updated decorator
 class DefaultPaymentValidator(IPaymentValidator):
     def validate_credit_card(self, number: str) -> bool:
         return len(number) == 16
 
-@singleton()
+@services.singleton() # Updated decorator
 class OrderProcessor:
     def __init__(
         self,
@@ -834,35 +884,47 @@ Now we'll integrate everything using WD-DI. The following code in `main.py` demo
 **File: `main.py`**
 
 ```python
-from wd.di import services
-from wd.di.config import Configuration, Options
+from wd.di import ServiceCollection # Updated import
+from wd.di.config import Configuration, Options, IConfiguration # Added IConfiguration
+from domain.interfaces import IOrderRepository, IOrderService # Added domain interface imports
+# Assuming these classes are defined in their respective files as shown in the tutorial structure
 from infrastructure.config import AppConfig
 from infrastructure.logging_service import Logger
-from data.repository import OrderRepository
-from services.order_service import OrderService
-from presentation.controller import OrderController
+from data.repository import OrderRepository # Assuming this class will be decorated
+from services.order_service import OrderService # Assuming this class will be decorated
+from presentation.controller import OrderController # Assuming this class will be decorated
+
+services = ServiceCollection() # Added
 
 # Configure application settings
-config = Configuration({
+app_config_data = Configuration({ # Renamed variable
     "app": {
         "debug": True,
         "emailServer": "smtp.example.com"
     }
 })
-services.add_singleton_factory(IConfiguration, lambda _: config)
+services.add_singleton_factory(IConfiguration, lambda _: app_config_data)
 services.configure(AppConfig, section="app")
 
 # Register infrastructure services
+# Logger is a concrete class; add_instance makes it a singleton.
+# Alternatively, Logger could be decorated with @services.singleton() in its own file.
 services.add_instance(Logger, Logger())
 
-# Register data access layer (repository)
-services.add_singleton(IOrderRepository, OrderRepository)
+# Register other layers/services.
+# These are typically registered via decorators in their respective class definition files.
+# For example, in data/repository.py:
+#   @services.singleton(IOrderRepository)
+#   class OrderRepository(IOrderRepository): ...
+#
+# So, the following explicit registrations in main.py become redundant if decorators are used:
+# services.add_singleton(IOrderRepository, OrderRepository)
+# services.add_singleton(IOrderService, OrderService)
+# services.add_transient(OrderController)
 
-# Register business logic (order service)
-services.add_singleton(IOrderService, OrderService)
-
-# Register presentation layer (controller)
-services.add_transient(OrderController)
+# Ensure your classes (OrderRepository, OrderService, OrderController, Logger)
+# are decorated appropriately in their definition files for the DI to resolve them.
+# For this example, we assume they are, or you would register them here if not decorated.
 
 # Build the service provider
 provider = services.build_service_provider()
@@ -895,4 +957,4 @@ In this tutorial, we've built a simple order processing application that demonst
 - **Manage configuration** through strongly-typed options.
 - **Leverage WD-DI** to wire all components together, ensuring proper management of service lifetimes and dependencies.
 
-By using WD-DI, you not only simplify dependency management but also establish a solid foundation for building scalable and maintainable applications. This design tutorial shows that dependency injection is far more than a theoretical concept—it’s a practical tool for crafting high-quality software architectures.
+By using WD-DI, you not only simplify dependency management but also establish a solid foundation for building scalable and maintainable applications. This design tutorial shows that dependency injection is far more than a theoretical concept—it's a practical tool for crafting high-quality software architectures.
