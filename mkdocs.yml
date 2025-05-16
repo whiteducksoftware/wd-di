@@ -64,6 +64,18 @@ markdown_extensions:
   - attr_list
   - md_in_html
 
+# Plugins
+plugins:
+  - search # Keep other plugins like search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src/wd/di]
+          options:
+            docstring_style: google
+            docstring_section_style: table
+            scoped_crossrefs: true
+
 # Copyright
 copyright: Copyright © 2024 White Duck GmbH
 
@@ -98,12 +110,14 @@ nav:
   - API Reference:
     - api/index.md
     - ServiceCollection: api/service_collection.md
-    - ServiceProvider & Scope: api/service_provider.md
+    - ServiceProvider & Scope: api/container.md
     - ServiceLifetime: api/lifetimes.md
     - create_service_collection(): api/create_service_collection.md
     - Middleware Components: api/middleware.md
     - Middleware DI: api/middleware_di.md
     - Configuration: api/config.md
+    - Descriptors: api/descriptors.md
+    - Exceptions: api/exceptions.md
   - Roadmap: roadmap.md
 
 

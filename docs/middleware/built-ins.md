@@ -51,7 +51,7 @@ pipeline = provider.get_service(MiddlewarePipeline)
 # Pipeline for context: MyContext(data='test_data') completed with result: Processed: test_data
 ```
 **Dependencies:**
-*   Requires a `logger_func: Callable[[str], None]` to be passed to its constructor. This function will be called with log messages.
+*   Requires a `logger_func: Callable[[str], None] to be passed to its constructor. This function will be called with log messages.
 
 ---
 
@@ -113,7 +113,7 @@ pipeline = provider.get_service(MiddlewarePipeline)
 ```
 
 **Dependencies:**
-*   Requires an `exception_handler: Callable[[Any, Exception], Any]` to be passed to its constructor.
+*   Requires an `exception_handler: Callable[[Any, Exception], Any] to be passed to its constructor.
 
 ---
 
@@ -176,7 +176,7 @@ pipeline = provider.get_service(MiddlewarePipeline)
 ```
 
 **Dependencies:**
-*   Requires a `validator: Callable[[Any], bool]` to be passed to its constructor.
+*   Requires a `validator: Callable[[Any], bool] to be passed to its constructor.
 
 ---
 

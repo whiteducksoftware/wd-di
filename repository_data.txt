@@ -1182,7 +1182,7 @@ adding
 Back-compat shims
 -----------------
 * ``ServiceProvider.__init__`` now accepts **either** the historical
-  ``Dict[Type, ServiceDescriptor]`` **or** a ``List[ServiceDescriptor]`` (the
+  ``Dict[Type, ServiceDescriptor]` **or** a ``List[ServiceDescriptor]` (the
   format emitted by the new :pyclass:`~wd.di.service_collection.ServiceCollection`).
 * A lightweight :pyclass:`Scope` alias mirrors the previous subclass so import
   paths like ``from wd.di.container import Scope`` keep working.  A scoped
@@ -2158,7 +2158,7 @@ class ServiceCollection(Generic[T]):
         """Bind *options_type* from the shared :pydata:`IConfiguration` instance.
 
         ``services.configure(MySettings)`` automatically registers
-        ``Options[MySettings]`` as a singleton whose value is built by binding
+        ``Options[MySettings]` as a singleton whose value is built by binding
         *MySettings* against the configuration tree at provider‑build time.
         """
         self._ensure_not_built()

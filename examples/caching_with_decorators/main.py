@@ -15,7 +15,7 @@ def main():
     services.add_instance(SlowExternalWeatherService, actual_slow_service)
     services.add_instance(IExternalWeatherService, actual_slow_service)
 
-    cache_duration = 7 # try different values to see the effect of the cache
+    cache_duration = 70 # try different values to see the effect of the cache
     caching_factory = create_caching_weather_decorator_factory(cache_duration_seconds=cache_duration)
     
     services.decorate(IExternalWeatherService, caching_factory)
