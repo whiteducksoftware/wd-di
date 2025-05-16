@@ -7,7 +7,7 @@ WD-DI includes a robust configuration system inspired by .NET's Options pattern.
 ## Key Components
 
 *   **`IConfiguration`:** An interface (and its concrete implementation `Configuration`) that represents your application's configuration. It can load data from a dictionary and provides methods to access configuration sections.
-*   **`Options[T]`:** A generic wrapper class. When you request `Options[MyConfigClass]`, WD-DI provides an instance of `Options` whose `value` attribute holds a populated instance of `MyConfigClass`.
+*   **`Options[T]:** A generic wrapper class. When you request `Options[MyConfigClass], WD-DI provides an instance of `Options` whose `value` attribute holds a populated instance of `MyConfigClass`.
 *   **`services.configure(ConfigClass, section_name)`:** A method on `ServiceCollection` used to bind a section of your application's configuration (retrieved from `IConfiguration`) to a specific dataclass (`ConfigClass`).
 
 ---
@@ -50,8 +50,8 @@ WD-DI includes a robust configuration system inspired by .NET's Options pattern.
     ```python
     sc.configure(DatabaseOptions, section="Database")
     ```
-    This tells WD-DI: "When `Options[DatabaseOptions]` is requested, find the 'Database' section in `IConfiguration`, create an instance of `DatabaseOptions`, and populate it with data from that section (automatically converting PascalCase/camelCase keys from config to snake_case attributes in the dataclass)."
-5.  **Inject `Options[T]` into Services:** In your services, depend on `Options[YourConfigClass]` to access the configured values.
+    This tells WD-DI: "When `Options[DatabaseOptions] is requested, find the 'Database' section in `IConfiguration`, create an instance of `DatabaseOptions`, and populate it with data from that section (automatically converting PascalCase/camelCase keys from config to snake_case attributes in the dataclass)."
+5.  **Inject `Options[T] into Services:** In your services, depend on `Options[YourConfigClass] to access the configured values.
     ```python
     from wd.di.config import Options
 
@@ -78,7 +78,7 @@ WD-DI includes a robust configuration system inspired by .NET's Options pattern.
 
 *   **Strong Typing:** Configuration is accessed via dataclasses, providing attribute access and type checking (if using static analysis). This reduces errors caused by typos in string-based dictionary lookups.
 *   **Centralization:** Configuration logic is defined in one place (your options dataclasses and the `configure` calls).
-*   **Decoupling:** Services depend on `Options[T]` rather than directly on `IConfiguration` or concrete configuration sources. This makes services more testable, as you can easily provide mock `Options` in tests.
+*   **Decoupling:** Services depend on `Options[T] rather than directly on `IConfiguration` or concrete configuration sources. This makes services more testable, as you can easily provide mock `Options` in tests.
 *   **Default Values:** Dataclasses allow you to specify default values for configuration properties, simplifying setup for common scenarios.
 *   **Clear Structure:** Configuration is organized into logical sections represented by different options classes.
 

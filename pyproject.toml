@@ -1,6 +1,6 @@
 [project]
 name = "wd-di"
-version = "0.2.13"
+version = "0.2.14"
 description = ".NET Core Dependency Injection for Python"
 readme = "README.md"
 authors = [
@@ -35,6 +35,7 @@ dev = [
     "mkdocs-macros-plugin>=1.3.7",
     "mkdocs-material>=9.6.14",
     "mkdocs-material-extensions>=1.3.1",
+    "mkdocstrings-python>=1.16.10",
     "mkdocstrings[python]>=0.29.1",
     "mypy>=1.15.0",
     "poethepoet>=0.32.2",
@@ -49,3 +50,49 @@ dev = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
+
+
+[tool.ruff]
+target-version = "py312"
+line-length = 120
+exclude = []
+cache-dir = ".cache/ruff"
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle
+    "F", # pyflakes
+    "W", # pycodestyle (warnings)
+    "I", # isort
+    "N", # pep8-naming
+    "ANN", # flake8-annotations
+    "B", # flake8-bugbear
+    "A", # flake8-builtins
+    "COM", # flake8-commas
+    "C4", # flake8-comprehensions
+    "DTZ", # flake8-datetimez
+    "EXE", # flake8-executable
+    "PIE", # flake8-pie
+    "T20", # flake8-print
+    "PT", # flake8-pytest
+    "SIM", # flake8-simplify
+    "ARG", # flake8-unused-arguments
+    "PTH", # flake8--use-pathlib
+    "ERA", # flake8-eradicate
+    "RUF", # ruff specific rules
+    "PL", # pylint
+]
+ignore = [
+    "ANN002", # Missing type annotation for *args
+    "ANN003", # Missing type annotation for **kwargs
+    "ANN204", # Missing type annotation for special method
+    "COM812", # Missing trailing comma
+    "PTH123", # `open()` should be replaced by `Path.open()`
+    "PLR2004", # Magic value used in comparison, consider replacing with a constant variable
+]
+
+[tool.ruff.lint.pylint]
+max-args = 10
+
+
+
+

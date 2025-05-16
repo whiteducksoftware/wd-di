@@ -1,22 +1,11 @@
-# ServiceLifetime API
+# Lifetimes API
 
-This enumeration defines the possible lifetimes for services registered with the DI container.
+::: wd.di.lifetimes.ServiceLifetime
+    handler: python
+    options:
+      show_root_heading: true
+      show_source: false
+      show_bases: false # For enums, often cleaner not to show Enum base
+      show_docstring_attributes: true # Show docstrings for enum members if any
+      members_order: source # Enums often best in source order
 
-```python
-from wd.di.lifetimes import ServiceLifetime
-```
-
-## Enum Members
-
-- **`ServiceLifetime.TRANSIENT`**
-  - Value: `1`
-  - Services registered with this lifetime are created each time they are requested from the `ServiceProvider` or `Scope`.
-
-- **`ServiceLifetime.SINGLETON`**
-  - Value: `2`
-  - Services registered with this lifetime are created only once. The same instance is returned for all subsequent requests from any `ServiceProvider` or `Scope` within the same root container.
-
-- **`ServiceLifetime.SCOPED`**
-  - Value: `3`
-  - Services registered with this lifetime are created once per `Scope`. Within the same scope, the same instance is returned. Different scopes will have different instances.
-  Scoped services cannot be resolved from the root `ServiceProvider` and must be resolved from a `Scope` created via `ServiceProvider.create_scope()`. 

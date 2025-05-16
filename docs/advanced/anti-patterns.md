@@ -68,7 +68,7 @@ class MyConfiguredService:
 # service = provider.get_service(MyConfiguredService)
 # service.perform_action()
 ```
-**Benefits:** Dependencies are explicit, configuration is testable (mock `Options[AppConfig]`), and the DI container manages the singleton lifetime.
+**Benefits:** Dependencies are explicit, configuration is testable (mock `Options[AppConfig]), and the DI container manages the singleton lifetime.
 
 ---
 
